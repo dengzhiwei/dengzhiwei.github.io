@@ -1,0 +1,782 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Java多线程编程中常用的同步方法与工具 | CodeMaster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="CodeMaster">
+    
+
+    
+    <meta name="description" content="大多数程序中，为了提高程序的执行效率的，会创建多个线程进行执行。但是多个线程同时运行的时候可能调用线程函数，同时对同一个内存地址进行写入，由于CPU时间调度上的问题，写入数据会被多次的覆盖，所以就要使线程同步。
+线程同步：即当有一个线程在对内存进行操作时，其他线程都不可以对这个内存地址进行操作，直到该线程完成操作， 其他线程才能对该内存地址进行操作，而其他线程又处于等待状态。线程的同步让多个运行的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java多线程编程中常用的同步方法与工具">
+<meta property="og:url" content="http://codemaster.tech/2016/11/19/Commonly-used-in-Java-multithreading-synchronization-method-and-tools/index.html">
+<meta property="og:site_name" content="CodeMaster">
+<meta property="og:description" content="大多数程序中，为了提高程序的执行效率的，会创建多个线程进行执行。但是多个线程同时运行的时候可能调用线程函数，同时对同一个内存地址进行写入，由于CPU时间调度上的问题，写入数据会被多次的覆盖，所以就要使线程同步。
+线程同步：即当有一个线程在对内存进行操作时，其他线程都不可以对这个内存地址进行操作，直到该线程完成操作， 其他线程才能对该内存地址进行操作，而其他线程又处于等待状态。线程的同步让多个运行的">
+<meta property="og:updated_time" content="2016-12-20T09:12:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java多线程编程中常用的同步方法与工具">
+<meta name="twitter:description" content="大多数程序中，为了提高程序的执行效率的，会创建多个线程进行执行。但是多个线程同时运行的时候可能调用线程函数，同时对同一个内存地址进行写入，由于CPU时间调度上的问题，写入数据会被多次的覆盖，所以就要使线程同步。
+线程同步：即当有一个线程在对内存进行操作时，其他线程都不可以对这个内存地址进行操作，直到该线程完成操作， 其他线程才能对该内存地址进行操作，而其他线程又处于等待状态。线程的同步让多个运行的">
+
+    
+    <link rel="alternative" href="/atom.xml" title="CodeMaster" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/logo.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="CodeMaster">CodeMaster</a></h1>
+				<h2 class="blog-motto">Stay hungry,Stay foolish</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>		
+			
+		<div class="social-font" class="clearfix">
+			
+			
+			<a href="https://github.com/xianrendzw/CodeMaster" target="_blank" class="icon-github" title="github"></a>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<a href="mailto:14068728@qq.com" target="_blank" class="icon-email" title="Email Me"></a>
+			
+		</div>	
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/11/19/Commonly-used-in-Java-multithreading-synchronization-method-and-tools/" title="Java多线程编程中常用的同步方法与工具" itemprop="url">Java多线程编程中常用的同步方法与工具</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="CodeMaster" target="_blank" itemprop="author">CodeMaster</a>
+		
+  <p class="article-time">
+    <time datetime="2016-11-19T14:13:45.000Z" itemprop="datePublished"> 发表于 2016-11-19 22:13:45</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#synchronized-实现同步"><span class="toc-number">1.</span> <span class="toc-text">synchronized 实现同步</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#修饰普通同步方法"><span class="toc-number">1.1.</span> <span class="toc-text">修饰普通同步方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修饰静态同步方法"><span class="toc-number">1.2.</span> <span class="toc-text">修饰静态同步方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修饰代码块"><span class="toc-number">1.3.</span> <span class="toc-text">修饰代码块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized等待唤醒机制"><span class="toc-number">1.4.</span> <span class="toc-text">synchronized等待唤醒机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Lock类实现同步"><span class="toc-number">2.</span> <span class="toc-text">Lock类实现同步</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ReentrantLock-可重入锁"><span class="toc-number">2.1.</span> <span class="toc-text">ReentrantLock 可重入锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ReentrantReadWriteLock读写锁"><span class="toc-number">2.2.</span> <span class="toc-text">ReentrantReadWriteLock读写锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lock同步等待和唤醒机制"><span class="toc-number">2.3.</span> <span class="toc-text">Lock同步等待和唤醒机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#volatile关键字"><span class="toc-number">3.</span> <span class="toc-text">volatile关键字</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Atomic原子类非阻塞同步方式"><span class="toc-number">4.</span> <span class="toc-text">Atomic原子类非阻塞同步方式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Java同步实用工具"><span class="toc-number">5.</span> <span class="toc-text">Java同步实用工具</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#CountDownLatch"><span class="toc-number">5.1.</span> <span class="toc-text">CountDownLatch</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CyclicBarriar-同步屏障"><span class="toc-number">5.2.</span> <span class="toc-text">CyclicBarriar 同步屏障</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Semaphore-信号量"><span class="toc-number">5.3.</span> <span class="toc-text">Semaphore 信号量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Exchanger"><span class="toc-number">5.4.</span> <span class="toc-text">Exchanger</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>大多数程序中，为了提高程序的执行效率的，会创建多个线程进行执行。但是多个线程同时运行的时候可能调用线程函数，同时对同一个内存地址进行写入，由于CPU时间调度上的问题，写入数据会被多次的覆盖，所以就要使线程同步。</p>
+<p>线程同步：即当有一个线程在对内存进行操作时，其他线程都不可以对这个内存地址进行操作，直到该线程完成操作， 其他线程才能对该内存地址进行操作，而其他线程又处于等待状态。线程的同步让多个运行的线程良好地协作，让多线程按要求合理地占用释放资源。目前实现线程同步的方法有很多，本文讲的是在Java中一般怎么实现线程同步，以及一些很实用的线程同步工具。本文仅做一些抛砖引玉作用。。</p>
+<h1 id="synchronized-实现同步"><a href="#synchronized-实现同步" class="headerlink" title="synchronized 实现同步"></a>synchronized 实现同步</h1><p>synchronized 是Java语法关键词，在多线程并发编程中synchronized一直是元老级的角色，很多人都会称呼它为“重量级锁”，虽然Java 1.6对synchronized进行了优化，有些情况下并不会那么重量级。synchronized在java中的具体表现为以下3中形式:</p>
+<ul>
+<li>1.修饰普通同步方法，锁是当前实例对象</li>
+<li>2.修饰静态同步方法，锁是当前类Class对象</li>
+<li>3.修饰代码块，锁是synchronized括号的对象<br>当一个线程试图访问同步代码时候，必须先取得以上对应对象锁，如果锁被其他线程占用时候，线程就会挂起等待，直到占用锁线程执行完毕或者异常退出释放占用的锁。</li>
+</ul>
+<h2 id="修饰普通同步方法"><a href="#修饰普通同步方法" class="headerlink" title="修饰普通同步方法"></a>修饰普通同步方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//实例方法同步</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">get</span><span class="params">()</span></span>&#123;</div><div class="line">    System.out.println(Thread.currentThread().getName()+<span class="string">"calling get...."</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//实例方法同步</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">()</span></span>&#123;</div><div class="line">    System.out.println(Thread.currentThread().getName()+<span class="string">"calling set...."</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="修饰静态同步方法"><a href="#修饰静态同步方法" class="headerlink" title="修饰静态同步方法"></a>修饰静态同步方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//静态方法同步</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">()</span></span>&#123;</div><div class="line">    System.out.println(Thread.currentThread().getName()+<span class="string">"calling add...."</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//静态方法同步</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">()</span></span>&#123;</div><div class="line">    System.out.println(Thread.currentThread().getName()+<span class="string">"calling remove...."</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="修饰代码块"><a href="#修饰代码块" class="headerlink" title="修饰代码块"></a>修饰代码块</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object sLock = <span class="keyword">new</span> Object();</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">blockSync</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">synchronized</span> (sLock) &#123;</div><div class="line">                <span class="comment">//do something</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;).start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="synchronized等待唤醒机制"><a href="#synchronized等待唤醒机制" class="headerlink" title="synchronized等待唤醒机制"></a>synchronized等待唤醒机制</h2><p>调用Object类wait()方法，可以将当前线程挂起加入 Lock对象的等待线程队列，调用Object类notify()、notifyAll()方法可以唤醒线程,需要注意的是：</p>
+<ul>
+<li>调用Object类的wait(), notify()方法前，必须获得obj锁，也就是必须写在synchronized(obj) {…} 代码段内。</li>
+<li>调用obj.wait()后，线程A就释放了obj的锁。</li>
+<li>当obj.wait()方法返回后，线程A需要再次获得obj锁，才能继续执行。</li>
+<li>如果A1、A2、A3都在wait()，则B调用notify()只能唤醒A1,A2,A3中的一个（具体哪一个由JVM决定）。notifyAll()则能全部唤醒A1、A2、A3，但是要继续执行wait()的下一条语句，必须获得obj锁，因此，A1,A2,A3只有一个有机会获得锁继续执行，例如A1，其余的需要等待A1释放obj锁之后才能继续执行。<br>当B调用notify/notifyAll的时候，B正持有obj锁，因此，A1,A2,A3虽被唤醒，但是仍无法获得obj锁。直到B退出synchronized块，释放obj锁后，A1、A2、A3中的一个才有机会获得锁继续执行。以下是简单例子</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">    <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">synchronized</span> (sLock) &#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    <span class="keyword">if</span>(condition)&#123;</div><div class="line">                        <span class="comment">//挂起到sLock等待线程队列</span></div><div class="line">                        sLock.wait();</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                    add();</div><div class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;).start();</div><div class="line"></div><div class="line">    <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">synchronized</span> (sLock) &#123;</div><div class="line">                <span class="comment">//do something</span></div><div class="line">                sLock.notify();</div><div class="line">                sleep(<span class="number">3000</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;).start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="Lock类实现同步"><a href="#Lock类实现同步" class="headerlink" title="Lock类实现同步"></a>Lock类实现同步</h1><p>锁是用来控制多个线程访问共享资源的方式，一般来说，一个锁能防止多个线程同时访问共享资源。在Lock接口出现前，Java程序是靠synchronized关键字实现锁的功能，Java 1.5之后，新增了Lock接口来实现锁的功能，它提供了与synchronized类似的同步功能，只是在使用的时候需要手动的获取和释放锁，虽然缺少了synchronized隐式释放锁的便捷性，但是却拥有了锁获取与释放的可操作性、可中断的获取锁以及超时获取锁等多种synchronized不具备的同步特性。</p>
+<p>Lock使用也很简单，以下是简单的使用方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> Lock lock =<span class="keyword">new</span> ReentrantLock();</div><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        lock.lock();</div><div class="line">        <span class="comment">//do something</span></div><div class="line">        <span class="keyword">try</span>&#123;</div><div class="line"></div><div class="line">        &#125;<span class="keyword">finally</span>&#123;</div><div class="line">            <span class="comment">//finally模块释放锁，目的是保证获取的锁最终能被释放</span></div><div class="line">            lock.unlock();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<h2 id="ReentrantLock-可重入锁"><a href="#ReentrantLock-可重入锁" class="headerlink" title="ReentrantLock 可重入锁"></a>ReentrantLock 可重入锁</h2><p>上面使用的例子即ReentrantLock可重入锁，指的是同一个线程多次试图获取它所占有的锁，请求会成功。当释放锁的时候，直到重入次数清零，锁才释放完毕。ReentrantLock 由最近成功获得锁，并且还没有释放该锁的线程所拥有。当锁没有被另一个线程所拥有时，调用 lock 的线程将成功获取该锁并返回。如果当前线程已经拥有该锁，此方法将立即返回。可以使用 isHeldByCurrentThread() 和 getHoldCount() 方法来检查此情况是否发生。</p>
+<ul>
+<li>Lock接口提供的synchronized不具备的同步特性</li>
+<li>tryLock()尝试非阻塞的获取锁，如果获取到则持有锁，否则返回</li>
+<li>tryLock(long time, TimeUnit unit) 超时获取锁，截止时间没获取锁即返回</li>
+<li>lockInterruptibly() 该方法可以响应中断，即在锁获取过程中可以中断当前线程。</li>
+<li>ReentrantLock必须在finally中释放锁，否则后果很严重，编码角度来说使用synchronized更加简单，不容易遗漏或者出错。</li>
+<li>ReentrantLock 的性能比synchronized会好点。</li>
+<li>synchronized锁的范围是整个方法或synchronized块部分；而Lock因为是方法调用，可以跨方法，灵活性更大</li>
+<li>ReentrantLock可以实现fair lock，就是看获得锁的顺序是不是和申请锁的时间的顺序是一致的</li>
+</ul>
+<h2 id="ReentrantReadWriteLock读写锁"><a href="#ReentrantReadWriteLock读写锁" class="headerlink" title="ReentrantReadWriteLock读写锁"></a>ReentrantReadWriteLock读写锁</h2><p>读写锁分为读锁和写锁，多个读锁不互斥，读锁与写锁互斥。</p>
+<ul>
+<li><p>线程进入读锁的前提条件：<br>– 没有其他线程的写锁，<br>– 没有写请求或者有写请求，但调用线程和持有锁的线程是同一个</p>
+</li>
+<li><p>线程进入写锁的前提条件：<br>– 没有其他线程的读锁<br>– 没有其他线程的写锁<br>– 以下是简单的使用实例</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">readWriteLockTest</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="keyword">final</span> ReentrantReadWriteLock lock =<span class="keyword">new</span> ReentrantReadWriteLock();</div><div class="line">    Thread t1=<span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            lock.readLock().lock();</div><div class="line">            <span class="comment">//do sth here</span></div><div class="line">            lock.readLock().unlock();</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    Thread t2=<span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            lock.writeLock().lock();</div><div class="line">            <span class="comment">//do sth here</span></div><div class="line">            lock.writeLock().unlock();              </div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>需要注意的是：</p>
+<ul>
+<li>重入方面其内部的WriteLock可以获取ReadLock，但是反过来ReadLock不能获得WriteLock。</li>
+<li>WriteLock可以降级为ReadLock，方法是，先获得WriteLock再获得ReadLock，然后释放WriteLock，这时候线程将保持Readlock的持有。</li>
+<li>ReadLock可以被多个线程持有并且在作用时排斥任何的WriteLock，而WriteLock则是完全的互斥。这一特性最为重要，因为对于高读取频率而相对较低写入的数据结构，使用此类锁同步机制则可以提高并发量。</li>
+<li>不管是ReadLock还是WriteLock都支持Interrupt，语义与ReentrantLock一致。</li>
+<li>WriteLock支持Condition并且与ReentrantLock语义一致，而ReadLock则不能使用Condition，否则抛出UnsupportedOperationException异常。</li>
+<li><h2 id="Lock同步等待和唤醒机制"><a href="#Lock同步等待和唤醒机制" class="headerlink" title="Lock同步等待和唤醒机制"></a>Lock同步等待和唤醒机制</h2></li>
+</ul>
+<p>Lock使用Condition接口来替代传统的Object wait(), notify/notifyAll等待唤醒，你可以在Condition上调用await()来挂起一个任务。当外部条件发生变化，你可以通过调用signal()来通知这个任务，或者调用signalAll()来唤醒所有在这个Condition上被其自身挂起的任务。相比使用Object的wait()、notify()，使用Condition1的await()、signal()这种方式实现线程间协作更加安全和高效。同一个Lock可以neW多个Condition实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> ReentrantLock sLock = <span class="keyword">new</span> ReentrantLock();</div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> Condition condition = sLock.newCondition();</div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> Condition condition2 = sLock.newCondition();</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">action</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">new</span> Thread(<span class="string">"小明"</span>) &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            sLock.lock();</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                condition.await();</div><div class="line">                a = <span class="string">"摘苹果"</span>;</div><div class="line">                System.out.println(Thread.currentThread().getName()</div><div class="line">                        + <span class="string">"完成任务："</span> + a);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                <span class="comment">// TODO Auto-generated catch block</span></div><div class="line">                e.printStackTrace();</div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                condition2.signalAll();</div><div class="line">                sLock.unlock();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">    &#125;.start();</div><div class="line"></div><div class="line">    <span class="keyword">new</span> Thread(<span class="string">"小明"</span>) &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            sLock.lock();</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                b = <span class="string">"大扫除"</span>;</div><div class="line">                System.out.println(Thread.currentThread().getName()</div><div class="line">                        + <span class="string">"完成任务："</span> + b);</div><div class="line">            &#125; <span class="keyword">finally</span> &#123;</div><div class="line">                condition.signalAll();</div><div class="line">                sLock.unlock();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">    &#125;.start();</div><div class="line"></div><div class="line">    sLock.lock();</div><div class="line">    <span class="keyword">try</span>&#123;</div><div class="line">        condition2.await();</div><div class="line">        System.out.println(<span class="string">"所有任务完成  a："</span> + a + <span class="string">" b："</span> + b);</div><div class="line">    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;<span class="keyword">finally</span>&#123;</div><div class="line">        sLock.unlock();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="volatile关键字"><a href="#volatile关键字" class="headerlink" title="volatile关键字"></a>volatile关键字</h1><p>在多线程并发编程中synchronized和Volatile都扮演着重要的角色，volatile是轻量级的synchronized，它在多处理器开发中保证了共享变量的“可见性”。线程为了提高效率，将某成员变量(如A)拷贝了一份（如B）到缓存，线程中对A的访问其实访问的是B。只在某些动作时才进行A和B的同步。因此存在A和B不一致的情况。volatile就是用来避免这种情况的。volatile告诉JVM， 它所修饰的变量不保留拷贝，直接访问主内存中的（也就是上面说的A)</p>
+<p>Java语言规范第三版中对volatile的定义如下： java编程语言允许线程访问共享变量，为了确保共享变量能被准确和一致的更新，线程应该确保通过排他锁单独获得这个变量。Java语言提供了volatile，在某些情况下比锁更加方便。如果一个字段被声明成volatile，java线程内存模型确保所有线程看到这个变量的值是一致的。volatile变量修饰符如果使用恰当的话，它比synchronized的使用和执行成本会更低，因为它不会引起线程上下文的切换和调度。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> condition = <span class="keyword">false</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCondition</span><span class="params">(<span class="keyword">boolean</span> c)</span></span>&#123;</div><div class="line">    condition = c;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">volatileFunc</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="keyword">while</span>(!condition)&#123;</div><div class="line">        <span class="comment">//do something</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>volatile一般情况下不能代替sychronized，因为volatile不能保证操作的原子性，即使只是i++，实际上也是由多个原子操作组成：read i; inc; write i，假如多个线程同时执行i++，volatile只能保证他们操作的i是同一块内存，但依然可能出现写入脏数据的情况。如果配合Java 5增加的atomic原子类，对它们的increase之类的操作就不需要sychronized。</p>
+<h1 id="Atomic原子类非阻塞同步方式"><a href="#Atomic原子类非阻塞同步方式" class="headerlink" title="Atomic原子类非阻塞同步方式"></a>Atomic原子类非阻塞同步方式</h1><p>在大多数情况下，我们为了实现线程安全都会使用Synchronized或lock来加锁进行线程的互斥同步，但互斥同步的最主要的问题就是进行线程的阻塞和唤醒所带来的性能问题，因此这种阻塞也称作阻塞同步。随着硬件指令集的发展，我们有了另一个选择：基于冲突检测的乐观并发策略，通俗的说，就是先进行操作，如果没有其他线程争用共享数据，那操作就成功；如果共享数据有争用，产生了冲突，那就再采用其他的补偿措施（最常见的就是不断的重试，直到成功），这种乐观的并发策略的许多实现都不需要把线程挂起，因此这种同步措施称为非阻塞同步。</p>
+<p>原子（atom）本意是“不能被进一步分割的最小粒子”，而原子操作（atomic operation）意为”不可被中断的一个或一系列操作”。Java从JDK1.5开始提供了java.util.concurrent.atomic包，方便程序员在多线程环境下，无锁的进行原子操作。原子变量的底层使用了处理器提供的原子指令，但是不同的CPU架构可能提供的原子指令不一样，也有可能需要某种形式的内部锁,所以该方法不能绝对保证线程不被阻塞。</p>
+<p>原子类内部实现是通过CAS（Compare and Swap）实现，现代的CPU提供了特殊的指令，可以自动更新共享数据，而且能够检测到其他线程的干扰，而 compareAndSet() 就用这些指令代替了锁定。比如以下AtomicInteger addAndGet()原子操作，内部循环使用compareAndSet</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Atomically adds the given value to the current value.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> delta the value to add</div><div class="line"> * <span class="doctag">@return</span> the updated value</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">addAndGet</span><span class="params">(<span class="keyword">int</span> delta)</span> </span>&#123;</div><div class="line">    <span class="keyword">for</span> (;;) &#123;</div><div class="line">        <span class="keyword">int</span> current = get();</div><div class="line">        <span class="keyword">int</span> next = current + delta;</div><div class="line">        <span class="keyword">if</span> (compareAndSet(current, next))</div><div class="line">            <span class="keyword">return</span> next;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Atomically sets the value to the given updated value</div><div class="line"> * if the current value &#123;<span class="doctag">@code</span> ==&#125; the expected value.</div><div class="line"> *</div><div class="line"> * <span class="doctag">@param</span> expect the expected value</div><div class="line"> * <span class="doctag">@param</span> update the new value</div><div class="line"> * <span class="doctag">@return</span> true if successful. False return indicates that</div><div class="line"> * the actual value was not equal to the expected value.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(<span class="keyword">int</span> expect, <span class="keyword">int</span> update)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="keyword">this</span>, valueOffset, expect, update);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>整体的过程就是这样，利用CPU的CAS指令，同时借助JNI来完成Java的非阻塞算法, 其它原子操作都是利用类似的特性完成的。以下是Atomic类简单的使用Demo</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AtomicDemo</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicInteger mAI= <span class="keyword">new</span> AtomicInteger(<span class="number">2</span>);</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicBoolean mAB = <span class="keyword">new</span> AtomicBoolean(<span class="keyword">true</span>);</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicIntegerArray mAIA = <span class="keyword">new</span> AtomicIntegerArray(<span class="number">5</span>);</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicReferenceArray&lt;String&gt; mARA =<span class="keyword">new</span> AtomicReferenceArray&lt;&gt;(<span class="number">5</span>);</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicReference&lt;People&gt; mAR =<span class="keyword">new</span> AtomicReference&lt;&gt;(<span class="keyword">new</span> People(<span class="string">"lili"</span>, <span class="number">15</span>));</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicIntegerFieldUpdater&lt;People&gt; mAIFU = AtomicIntegerFieldUpdater.newUpdater(People.class, <span class="string">"age"</span>);</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicStampedReference&lt;People&gt; mASR = <span class="keyword">new</span> AtomicStampedReference&lt;AtomicDemo.People&gt;(<span class="keyword">new</span> People(<span class="string">"lili"</span>, <span class="number">15</span>) , <span class="number">1</span>);</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AtomicMarkableReference&lt;People&gt; mAMR = <span class="keyword">new</span> AtomicMarkableReference&lt;AtomicDemo.People&gt;(<span class="keyword">new</span> People(<span class="string">"lili"</span>,<span class="number">15</span>),<span class="keyword">true</span>);</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        atomicIntegerTest();</div><div class="line">        atomicBooleanTest();</div><div class="line"></div><div class="line">        atomicIntegerArrayTest();</div><div class="line">        atomicReferenceArrayTest();</div><div class="line"></div><div class="line">        atomicReferenceTest();</div><div class="line">        atomicStampedReferenceTest();</div><div class="line">        atomicMarkableReferenceTest();</div><div class="line"></div><div class="line">        atomicIntegerFieldUpdaterTest();</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicIntegerTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicIntegerTest========"</span>);</div><div class="line">        System.out.println(mAI.get());</div><div class="line">        System.out.println(mAI.compareAndSet(<span class="number">2</span>, <span class="number">10</span>));</div><div class="line">        System.out.println(mAI.addAndGet(<span class="number">20</span>));</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicBooleanTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicBooleanTest========"</span>);</div><div class="line">        System.out.println(mAB.get());</div><div class="line">        System.out.println(mAB.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>));</div><div class="line">        mAB.getAndSet(<span class="keyword">true</span>);</div><div class="line">        System.out.println(mAB.get());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicIntegerArrayTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicIntegerArrayTest========"</span>);</div><div class="line">        System.out.println(mAIA.addAndGet(<span class="number">1</span>, <span class="number">100</span>));</div><div class="line">        System.out.println(mAIA.compareAndSet(<span class="number">2</span>, <span class="number">0</span>,<span class="number">20</span>));</div><div class="line">        mAIA.getAndSet(<span class="number">1</span>, <span class="number">100</span>);</div><div class="line">        System.out.println(mAIA);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicReferenceArrayTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicReferenceArrayTest========"</span>);</div><div class="line">        System.out.println(mARA.getAndSet(<span class="number">0</span>, <span class="string">"Hello"</span>));</div><div class="line">        System.out.println(mARA.compareAndSet(<span class="number">1</span>, <span class="keyword">null</span>,<span class="string">"Hehe"</span>));</div><div class="line">        mARA.getAndSet(<span class="number">3</span>,<span class="string">"WTF"</span>);</div><div class="line">        System.out.println(mARA);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicReferenceTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicReferenceTest========"</span>);</div><div class="line">        People p1 = <span class="keyword">new</span> People(<span class="string">"xiaoming"</span>, <span class="number">18</span>);</div><div class="line">        System.out.println(<span class="string">"Before set: "</span>+mAR.getAndSet(p1));</div><div class="line">        System.out.println(<span class="string">"After set: "</span>+mAR.get());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicIntegerFieldUpdaterTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicIntegerFieldUpdaterTest========"</span>);</div><div class="line">        People p1 = <span class="keyword">new</span> People(<span class="string">"xiaoming"</span>, <span class="number">18</span>);</div><div class="line">        System.out.println(<span class="string">"Before set: "</span>+mAIFU.getAndSet(p1,<span class="number">10</span>));</div><div class="line">        System.out.println(<span class="string">"After set: "</span>+mAIFU.get(p1));</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicStampedReferenceTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicStampedReferenceTest========"</span>);</div><div class="line">        People p1 = <span class="keyword">new</span> People(<span class="string">"xiaoming"</span>, <span class="number">18</span>);</div><div class="line">        System.out.println(<span class="string">"Before set: "</span>+mASR.getStamp());</div><div class="line">        mASR.compareAndSet(<span class="keyword">null</span>, p1, <span class="number">1</span>, <span class="number">10</span>);</div><div class="line">        System.out.println(<span class="string">"After set: "</span>+mASR.getStamp());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">atomicMarkableReferenceTest</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.println(<span class="string">"=========atomicMarkableReferenceTest========"</span>);</div><div class="line">        People p1 = <span class="keyword">new</span> People(<span class="string">"xiaoming"</span>, <span class="number">18</span>);</div><div class="line">        System.out.println(<span class="string">"Before set: "</span>+mAMR.getReference() +<span class="string">", marked = "</span>+mAMR.isMarked());</div><div class="line">        mAMR.attemptMark(p1, <span class="keyword">true</span>);</div><div class="line">        System.out.println(<span class="string">"After set: "</span>+mAMR.getReference()+<span class="string">", marked = "</span>+mAMR.isMarked());</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">People</span></span>&#123;</div><div class="line">        <span class="keyword">volatile</span> <span class="keyword">int</span> age;</div><div class="line">        String name;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">People</span><span class="params">(String name, <span class="keyword">int</span> age)</span></span>&#123;</div><div class="line">            <span class="keyword">this</span>.name = name;</div><div class="line">            <span class="keyword">this</span>.age =age;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> name+<span class="string">"_"</span>+age;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h1 id="Java同步实用工具"><a href="#Java同步实用工具" class="headerlink" title="Java同步实用工具"></a>Java同步实用工具</h1><h2 id="CountDownLatch"><a href="#CountDownLatch" class="headerlink" title="CountDownLatch"></a>CountDownLatch</h2><p>CountDownLatch是一个计数器，这个计数器的操作是原子操作，同时只能有一个线程去操作这个计数器。你可以向CountDownLatch对象设置一个初始的数字作为计数值，任何调用这个对象上的await()方法都会阻塞，直到这个计数器的计数值被其他的线程减为0为止。CountDownLatch的一个非常典型的应用场景是：有一个任务想要往下执行，但必须要等到其他的任务执行完毕后才可以继续往下执行。如以下实例，小明摘完苹果，计数器减1，小花大扫除完，计数器减1。两个动作完成后，计数器清零,await()方法取消阻塞，返回。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">new</span> Thread(<span class="string">"小明"</span>)&#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">2000</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            a=<span class="string">"摘苹果"</span>;</div><div class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">"完成任务："</span>+a);</div><div class="line">            System.out.println(<span class="string">"before A count:"</span>+mCount.getCount());</div><div class="line">            mCount.countDown();</div><div class="line">            System.out.println(<span class="string">"after A count:"</span>+mCount.getCount());</div><div class="line">        &#125;;</div><div class="line">    &#125;.start();</div><div class="line"></div><div class="line">    <span class="keyword">new</span> Thread(<span class="string">"小花"</span>)&#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">1000</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            b=<span class="string">"大扫除"</span>;</div><div class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">"完成任务："</span>+b);</div><div class="line">            System.out.println(<span class="string">"before B count:"</span>+mCount.getCount());</div><div class="line">            mCount.countDown();</div><div class="line">            System.out.println(<span class="string">"after B count:"</span>+mCount.getCount());</div><div class="line">        &#125;;</div><div class="line">    &#125;.start();</div><div class="line"></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        mCount.await();</div><div class="line">    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125;</div><div class="line">    System.out.println(<span class="string">"所有任务完成  a："</span>+a+<span class="string">" b："</span>+b);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong> 注意：CountDownLatch不能重新初始化，或者修改对象内部计数器的值。</strong></p>
+<h2 id="CyclicBarriar-同步屏障"><a href="#CyclicBarriar-同步屏障" class="headerlink" title="CyclicBarriar 同步屏障"></a>CyclicBarriar 同步屏障</h2><p>CyclicBarriar字面意思是可循环使用的屏障，它功能是，当一组线程到达一个屏障时被阻塞，直到最后一个线程到达屏障，屏障才会开门，所有被屏障拦截的线程才会继续执行,使用实例如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> String a = <span class="keyword">null</span>;</div><div class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> String b = <span class="keyword">null</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">final</span> CyclicBarrier c=<span class="keyword">new</span> CyclicBarrier(<span class="number">2</span>, <span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            System.out.println(<span class="string">"所有任务完成  a："</span>+a+<span class="string">" b："</span>+b);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    Thread t1=<span class="keyword">new</span> Thread(<span class="string">"小明"</span>)&#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">2000</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            a=<span class="string">"摘苹果"</span>;</div><div class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">"完成任务："</span>+a);</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                c.await();</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException | BrokenBarrierException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    Thread t2=<span class="keyword">new</span> Thread(<span class="string">"小花"</span>)&#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">1000</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            b=<span class="string">"大扫除"</span>;</div><div class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">"完成任务："</span>+b);</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                c.await();</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException | BrokenBarrierException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    t1.start();</div><div class="line">    t2.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>CyclicBarriar可以reset重新初始化，比CountDownLatch灵活，所以在一些应用比较复杂的场景，优先使用CyclicBarriar</p>
+<h2 id="Semaphore-信号量"><a href="#Semaphore-信号量" class="headerlink" title="Semaphore 信号量"></a>Semaphore 信号量</h2><p>Semaphore当前在多线程环境下被广泛使用，在进程控制方面都有应用。Java 并发库 的Semaphore 可以很轻松完成信号量控制，Semaphore可以控制某个资源可被同时访问的个数，通过 acquire() 获取一个许可，如果没有就等待，而 release() 释放一个许可。如果初始化个数设置为1，Semaphore可以当作一个互斥锁进行使用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Semaphore sem = <span class="keyword">new</span> Semaphore(<span class="number">2</span>);</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        Thread t1 = <span class="keyword">new</span> MThread(<span class="string">"t1"</span>);</div><div class="line">        Thread t2 = <span class="keyword">new</span> MThread(<span class="string">"t2"</span>);</div><div class="line">        Thread t3 = <span class="keyword">new</span> MThread(<span class="string">"t3"</span>);</div><div class="line"></div><div class="line">        t1.start();</div><div class="line">        t2.start();</div><div class="line">        t3.start();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">MThread</span><span class="params">(String name)</span></span>&#123;</div><div class="line">            <span class="keyword">super</span>(name);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                sem.acquire();</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">2000</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">" 运行中。。。。"</span>);</div><div class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">" 运行结束"</span>);</div><div class="line">            sem.release();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="Exchanger"><a href="#Exchanger" class="headerlink" title="Exchanger"></a>Exchanger</h2><p>Exchanger是Java 并发 API 提供的一种允许2个并发任务间相互交换数据的同步机制。更具体的说，Exchanger类允许在2个线程间定义同步点，在到达exchange交换点后线程会阻塞，当2个线程都到达这个点，exchange方法才返回，并且他们相互交换的数据，即第一个线程收到第二个线程传过来的数据，然后第二个线程收到第一个线程传过来的数据。使用实例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExchangerDemo</span> </span>&#123;</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> Exchanger&lt;String&gt; exchanger = <span class="keyword">new</span> Exchanger&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        <span class="keyword">new</span> Thread(<span class="string">"小明"</span>)&#123;</div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    Thread.sleep(<span class="number">2000</span>);</div><div class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                String a=<span class="keyword">null</span>;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    a = exchanger.exchange(<span class="string">"你好，我是小小明"</span>);</div><div class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">                System.out.println(Thread.currentThread().getName()+<span class="string">"听见声音: "</span>+a);</div><div class="line">            &#125;;</div><div class="line">        &#125;.start();</div><div class="line"></div><div class="line">        <span class="keyword">new</span> Thread(<span class="string">"小花"</span>)&#123;</div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">                String b=<span class="keyword">null</span>;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    Thread.sleep(<span class="number">1000</span>);</div><div class="line">                    <span class="comment">//把null传给对方</span></div><div class="line">                    b=exchanger.exchange(<span class="keyword">null</span>);</div><div class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                String a=<span class="keyword">null</span>;</div><div class="line">                System.out.println(Thread.currentThread().getName()+<span class="string">"听见声音: "</span>+b);</div><div class="line">            &#125;;</div><div class="line">        &#125;.start();</div><div class="line"></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            TimeUnit.SECONDS.sleep(<span class="number">1</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以上例子，小明线程给小花传递了名字，而小花比较害羞，传了个null。结果就是小明收到null，小花收到“你好，我是小小明信息”。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/JAVA多程线开发/">JAVA多程线开发</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/多线程/">多线程</a><a href="/tags/java/">java</a><a href="/tags/并发/">并发</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://codemaster.tech/2016/11/19/Commonly-used-in-Java-multithreading-synchronization-method-and-tools/" data-title="Java多线程编程中常用的同步方法与工具 | CodeMaster" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/11/19/Java-multithread-architecture/" title="Java多线程体系结构">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Java多线程体系结构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/11/19/Analysis-of-JAVA-Object-Wait-notify-All-principle/"  title="分析JAVA Object.wait/notify(All)实现原理">
+ <strong>下一篇：</strong><br/> 
+ <span>分析JAVA Object.wait/notify(All)实现原理
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/11/19/Commonly-used-in-Java-multithreading-synchronization-method-and-tools/" data-title="Java多线程编程中常用的同步方法与工具" data-url="http://codemaster.tech/2016/11/19/Commonly-used-in-Java-multithreading-synchronization-method-and-tools/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#synchronized-实现同步"><span class="toc-number">1.</span> <span class="toc-text">synchronized 实现同步</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#修饰普通同步方法"><span class="toc-number">1.1.</span> <span class="toc-text">修饰普通同步方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修饰静态同步方法"><span class="toc-number">1.2.</span> <span class="toc-text">修饰静态同步方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修饰代码块"><span class="toc-number">1.3.</span> <span class="toc-text">修饰代码块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized等待唤醒机制"><span class="toc-number">1.4.</span> <span class="toc-text">synchronized等待唤醒机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Lock类实现同步"><span class="toc-number">2.</span> <span class="toc-text">Lock类实现同步</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ReentrantLock-可重入锁"><span class="toc-number">2.1.</span> <span class="toc-text">ReentrantLock 可重入锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ReentrantReadWriteLock读写锁"><span class="toc-number">2.2.</span> <span class="toc-text">ReentrantReadWriteLock读写锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lock同步等待和唤醒机制"><span class="toc-number">2.3.</span> <span class="toc-text">Lock同步等待和唤醒机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#volatile关键字"><span class="toc-number">3.</span> <span class="toc-text">volatile关键字</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Atomic原子类非阻塞同步方式"><span class="toc-number">4.</span> <span class="toc-text">Atomic原子类非阻塞同步方式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Java同步实用工具"><span class="toc-number">5.</span> <span class="toc-text">Java同步实用工具</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#CountDownLatch"><span class="toc-number">5.1.</span> <span class="toc-text">CountDownLatch</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CyclicBarriar-同步屏障"><span class="toc-number">5.2.</span> <span class="toc-text">CyclicBarriar 同步屏障</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Semaphore-信号量"><span class="toc-number">5.3.</span> <span class="toc-text">Semaphore 信号量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Exchanger"><span class="toc-number">5.4.</span> <span class="toc-text">Exchanger</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/JAVA多程线开发/" title="JAVA多程线开发">JAVA多程线开发<sup>5</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JVM基础知识/" title="JVM基础知识">JVM基础知识<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式系统/" title="分布式系统">分布式系统<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大规模Web站点开发/" title="大规模Web站点开发">大规模Web站点开发<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机基础/" title="计算机基础">计算机基础<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件架构/" title="软件架构">软件架构<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件配置管理/" title="软件配置管理">软件配置管理<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/多线程/" title="多线程">多线程<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并发/" title="并发">并发<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Web站点/" title="Web站点">Web站点<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/微服务/" title="微服务">微服务<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ID生成/" title="ID生成">ID生成<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/高并发/" title="高并发">高并发<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JVM/" title="JVM">JVM<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/带宽/" title="带宽">带宽<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式锁/" title="分布式锁">分布式锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SOA/" title="SOA">SOA<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/maven/" title="maven">maven<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scm/" title="scm">scm<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/项目管理/" title="项目管理">项目管理<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/浮点数运算/" title="浮点数运算">浮点数运算<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/精度丢失/" title="精度丢失">精度丢失<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://dengzhiwei.me" target="_blank" title="Tom Deng">Tom Deng</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://zhuanlan.zhihu.com/donglaoshi" target="_blank" title="董老师在硅谷">董老师在硅谷</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.zhihu.com/people/rednaxelafx" target="_blank" title="RednaxelaFX">RednaxelaFX</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spring.io/" target="_blank" title="Spring">Spring</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://vertx.io/" target="_blank" title="Vert.x">Vert.x</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.playframework.com/" target="_blank" title="Play Framework">Play Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nodeframework.com/" target="_blank" title="Node Framework">Node Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://restlet.com/" target="_blank" title="Restlet">Restlet</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spray.io/" target="_blank" title="Spray">Spray</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nosql-database.org/" target="_blank" title="NoSQL">NoSQL</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://ifeve.com/" target="_blank" title="并发编程网">并发编程网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jdon.com/" target="_blank" title="Jdon">Jdon</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.javaadvent.com/" target="_blank" title="Java Advent">Java Advent</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://studygolang.com/" target="_blank" title="Go语言中文网">Go语言中文网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.techempower.com/benchmarks/" target="_blank" title="Techempower">Techempower</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.microsoft.com/net/" target="_blank" title=".Net Framework">.Net Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://highscalability.com/" target="_blank" title="Highscalability">Highscalability</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://aosabook.org/blog/" target="_blank" title="Architecture">Architecture</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/lauris/awesome-scala" target="_blank" title="Scala libraries">Scala libraries</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://martinfowler.com/" target="_blank" title="Martin Fowler">Martin Fowler</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://colobu.com/" target="_blank" title="Colobu">Colobu</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/JacksonTian/fks" target="_blank" title="JacksonTian">JacksonTian</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.ruanyifeng.com/blog/" target="_blank" title="阮一峰">阮一峰</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.codingnow.com/" target="_blank" title="云风">云风</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://dongxicheng.org/" target="_blank" title="董的博客">董的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/v_JULY_v" target="_blank" title="7月算法">7月算法</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+<!--
+	
+	
+	<section class="info">
+		<p> Keeping code every day. <br/>
+			You will became a master.</p>
+	</section>
+	  -->
+	
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="CodeMaster">CodeMaster</a>
+		
+		
+		<!-- Analytics Begin -->
+		
+
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260842302'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/stat.php%3Fid%3D1260842302%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+		<!-- Analytics End -->
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"xianrendzw"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

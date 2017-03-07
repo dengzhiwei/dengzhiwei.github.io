@@ -1,0 +1,734 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>分析JAVA Object.wait/notify(All)实现原理 | CodeMaster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="CodeMaster">
+    
+
+    
+    <meta name="description" content="在Java的Object类中有2个不怎么常用的方法：wait()与notify()或notfiyAll()，这两个方法主要用于多线程间的协同处理，即控制线程之间的等待、通知、切换及唤醒。由于现在JAVA平台自身提升了很多并发类与库(JUC)，以及很多第三方的开源的并发框架(disruptor、akka)，因此大部分开发者都很少用这种原始的方法去控制线程的协作，所以对其中的一些细节很少去研究。此文">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分析JAVA Object.wait/notify(All)实现原理">
+<meta property="og:url" content="http://codemaster.tech/2016/11/19/Analysis-of-JAVA-Object-Wait-notify-All-principle/index.html">
+<meta property="og:site_name" content="CodeMaster">
+<meta property="og:description" content="在Java的Object类中有2个不怎么常用的方法：wait()与notify()或notfiyAll()，这两个方法主要用于多线程间的协同处理，即控制线程之间的等待、通知、切换及唤醒。由于现在JAVA平台自身提升了很多并发类与库(JUC)，以及很多第三方的开源的并发框架(disruptor、akka)，因此大部分开发者都很少用这种原始的方法去控制线程的协作，所以对其中的一些细节很少去研究。此文">
+<meta property="og:updated_time" content="2016-12-20T09:24:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分析JAVA Object.wait/notify(All)实现原理">
+<meta name="twitter:description" content="在Java的Object类中有2个不怎么常用的方法：wait()与notify()或notfiyAll()，这两个方法主要用于多线程间的协同处理，即控制线程之间的等待、通知、切换及唤醒。由于现在JAVA平台自身提升了很多并发类与库(JUC)，以及很多第三方的开源的并发框架(disruptor、akka)，因此大部分开发者都很少用这种原始的方法去控制线程的协作，所以对其中的一些细节很少去研究。此文">
+
+    
+    <link rel="alternative" href="/atom.xml" title="CodeMaster" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/logo.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="CodeMaster">CodeMaster</a></h1>
+				<h2 class="blog-motto">Stay hungry,Stay foolish</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>		
+			
+		<div class="social-font" class="clearfix">
+			
+			
+			<a href="https://github.com/xianrendzw/CodeMaster" target="_blank" class="icon-github" title="github"></a>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<a href="mailto:14068728@qq.com" target="_blank" class="icon-email" title="Email Me"></a>
+			
+		</div>	
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/11/19/Analysis-of-JAVA-Object-Wait-notify-All-principle/" title="分析JAVA Object.wait/notify(All)实现原理" itemprop="url">分析JAVA Object.wait/notify(All)实现原理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="CodeMaster" target="_blank" itemprop="author">CodeMaster</a>
+		
+  <p class="article-time">
+    <time datetime="2016-11-19T14:04:48.000Z" itemprop="datePublished"> 发表于 2016-11-19 22:04:48</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#为何调用wait或notify方法时要加同步锁-synchronized-不加行不行"><span class="toc-number">1.</span> <span class="toc-text">为何调用wait或notify方法时要加同步锁(synchronized),不加行不行</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#调用thread2的lock-wait方法后当前线程还未退出同步代码块，其他线程-thread1-能进入同步块么"><span class="toc-number">2.</span> <span class="toc-text">调用thread2的lock.wait方法后当前线程还未退出同步代码块，其他线程(thread1)能进入同步块么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#为何调用wait方法有可能抛出InterruptedException异常"><span class="toc-number">3.</span> <span class="toc-text">为何调用wait方法有可能抛出InterruptedException异常</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#当调用notify-notiflyAll方法后等待中的线程会立刻唤醒么"><span class="toc-number">4.</span> <span class="toc-text">当调用notify/notiflyAll方法后等待中的线程会立刻唤醒么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#当调用notify-notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行"><span class="toc-number">5.</span> <span class="toc-text">当调用notify/notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#wait的线程是否会影响系统加载降低性能"><span class="toc-number">6.</span> <span class="toc-text">wait的线程是否会影响系统加载降低性能</span></a></li></ol>
+		
+		</div>
+		
+		<p>　在Java的<a href="http://docs.oracle.com/javase/8/docs/api/java/lang/Object.html#method.detail" target="_blank" rel="external">Object</a>类中有2个不怎么常用的方法：wait()与notify()或notfiyAll()，这两个方法主要用于多线程间的协同处理，即控制线程之间的等待、通知、切换及唤醒。由于现在JAVA平台自身提升了很多并发类与库(<a href="http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/package-summary.html" target="_blank" rel="external">JUC</a>)，以及很多第三方的开源的并发框架(<a href="https://github.com/LMAX-Exchange/disruptor" target="_blank" rel="external">disruptor</a>、<a href="http://akka.io/" target="_blank" rel="external">akka</a>)，因此大部分开发者都很少用这种原始的方法去控制线程的协作，所以对其中的一些细节很少去研究。此文就与大家一起来探究其中的奥秘。  </p>
+<p>　首先让大家分析如下代码的运行结果:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String... args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] lock = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>];</div><div class="line"></div><div class="line">    <span class="keyword">final</span> Thread thread1 = <span class="keyword">new</span> Thread(<span class="string">"thread1"</span>) &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            System.out.println(<span class="string">"thread1 is ready!"</span>);</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">1000</span> * <span class="number">5</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">synchronized</span> (lock) &#123;</div><div class="line">                lock.notify();</div><div class="line">                System.out.println(<span class="string">"thread1 is notify, but not exit synchronized!"</span>);</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    Thread.sleep(<span class="number">1000</span>);</div><div class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                &#125;</div><div class="line">                System.out.println(<span class="string">"thread1 is exit synchronized!"</span>);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="keyword">final</span> Thread thread2 = <span class="keyword">new</span> Thread(<span class="string">"thread2"</span>) &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            System.out.println(<span class="string">"thread2 is ready!"</span>);</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                Thread.sleep(<span class="number">1000</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">synchronized</span> (lock) &#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    System.out.println(<span class="string">"thread2 is waiting!"</span>);</div><div class="line">                    lock.wait();</div><div class="line">                    System.out.println(<span class="string">"thread2 is awake!"</span>);</div><div class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    thread1.start();</div><div class="line">    thread2.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上段代码运行结果如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">thread2 is ready!</div><div class="line">thread1 is ready!</div><div class="line">thread2 is waiting!</div><div class="line">thread1 is notify, but not <span class="built_in">exit</span> synchronized!</div><div class="line">thread1 is <span class="built_in">exit</span> synchronized!</div><div class="line">thread2 is awake!</div></pre></td></tr></table></figure>
+<p>表面上看这个运行结果觉得很正常，也许与你分析的情况也相符合。但是如果我们深入分析一下就会发现以下几个问题：  </p>
+<ul>
+<li>为何调用wait或notify方法时要加同步锁(synchronized),不加行不行?</li>
+<li>调用thread2的lock.wait方法后当前线程还未退出同步代码块，其他线程(thread1)能进入同步块么?</li>
+<li>为何调用wait方法有可能抛出InterruptedException异常?</li>
+<li>当调用notify/notiflyAll方法后等待中的线程会立刻唤醒么?</li>
+<li>当调用notify/notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行?</li>
+<li>wait的线程是否会影响系统加载降低性能?</li>
+</ul>
+<p>下面我们就来逐一分析上述问题背后的原因。</p>
+<h1 id="为何调用wait或notify方法时要加同步锁-synchronized-不加行不行"><a href="#为何调用wait或notify方法时要加同步锁-synchronized-不加行不行" class="headerlink" title="为何调用wait或notify方法时要加同步锁(synchronized),不加行不行"></a>为何调用wait或notify方法时要加同步锁(synchronized),不加行不行</h1><p>从实现上来说，这个锁至关重要，正因为这把锁，才能让整个wait/notify玩转起来，因为它要保证wait()/notify()这个整体代码块的原子性。具体可以看<a href="http://stackoverflow.com/questions/2779484/why-must-wait-always-be-in-synchronized-block" target="_blank" rel="external">参考文章1</a></p>
+<h1 id="调用thread2的lock-wait方法后当前线程还未退出同步代码块，其他线程-thread1-能进入同步块么"><a href="#调用thread2的lock-wait方法后当前线程还未退出同步代码块，其他线程-thread1-能进入同步块么" class="headerlink" title="调用thread2的lock.wait方法后当前线程还未退出同步代码块，其他线程(thread1)能进入同步块么"></a>调用thread2的lock.wait方法后当前线程还未退出同步代码块，其他线程(thread1)能进入同步块么</h1><p>这个问题其实要回答很简单，因为在wait处理过程中会<strong>临时释放同步锁</strong>（这一点是关键，如果不释放锁那别的线程根本没有机会抢占锁），不过需要注意的是当某个线程调用notify唤起了这个线程的时候，在wait方法退出之前会重新获取这把锁，只有获取了这把锁才会继续执行，想象一下，我们知道wait的方法是被monitorenter和monitorexit包围起来，当我们在执行wait方法过程中如果释放了锁，出来的时候又不拿锁，那在执行到monitorexit指令的时候会发生什么？我们可以从jdk的源代码来看看其中的内幕，具体代码在jdk源代码的<a href="http://hg.openjdk.java.net/jdk8/jdk8/hotspot/file/87ee5ee27509/src/share/vm/runtime/objectMonitor.cpp" target="_blank" rel="external">objectMonitor</a>类objectMonitor::wait方法中.在线程进行wait的时候，会先放弃到已经抢到的锁——exit(self)，而释放锁的前提是先要获取到锁，这也是为什么java wait()方法会IllegalMonitorStateException的原因，接着他会将自己park住（实质是pthread_mutex_lock）。这时候再回到notify的else策略中，选取一个wait的线程进行unpark，被unpark的线程会获得CPU执行，但是是否意味着能获取到锁呢？不是的。我们看看wait的线程被unpark之后，还是需要去竞争锁（因为java wait()方法还是在同步块中的，不去竞争锁会违反同步规则）， enter (Self) 或者ReenterI (Self, &amp;node)，objectMonitor::enter其实也是monitorenter的入口，objectMonitor::enter中主要是进行tryLock和trySpin来竞争锁，如果还是没有竞争到则会进入休眠。</p>
+<h1 id="为何调用wait方法有可能抛出InterruptedException异常"><a href="#为何调用wait方法有可能抛出InterruptedException异常" class="headerlink" title="为何调用wait方法有可能抛出InterruptedException异常"></a>为何调用wait方法有可能抛出InterruptedException异常</h1><p>这个异常大家应该都知道，当我们调用了某个线程的interrupt方法时，对应的线程会抛出这个异常，wait方法也不希望破坏这种规则，因此就算当前线程因为wait一直在阻塞，当某个线程希望它起来继续执行的时候，它还是得从阻塞态恢复过来，因此wait方法被唤醒起来的时候会去检测这个状态，当有线程interrupt了它的时候，它就会抛出这个异常从阻塞状态恢复过来。<br>这里有两点要注意：</p>
+<ul>
+<li>如果被interrupt的线程只是创建了，并没有start，那等他start之后进入wait态之后也是不能会恢复的</li>
+<li>如果被interrupt的线程已经start了，在进入wait之前，如果有线程调用了其interrupt方法，那这个wait等于什么都没做，会直接跳出来，不会阻塞</li>
+</ul>
+<h1 id="当调用notify-notiflyAll方法后等待中的线程会立刻唤醒么"><a href="#当调用notify-notiflyAll方法后等待中的线程会立刻唤醒么" class="headerlink" title="当调用notify/notiflyAll方法后等待中的线程会立刻唤醒么"></a>当调用notify/notiflyAll方法后等待中的线程会立刻唤醒么</h1><p>其实这个大家可以验证一下，在notify之后写一些逻辑，看这些逻辑是在其他线程被唤起之前还是之后执行，这个是个细节问题，可能大家并没有关注到这个，其实hotspot里真正的实现是退出同步块的时候才会去真正唤醒对应的线程，不过这个也是个默认策略，也可以改的，在notify之后立马唤醒相关线程。这个也可从jdk源代码的<a href="http://hg.openjdk.java.net/jdk8/jdk8/hotspot/file/87ee5ee27509/src/share/vm/runtime/objectMonitor.cpp" target="_blank" rel="external">objectMonitor</a>类objectMonitor::notify方法中.在调用otify时的默认策略是Policy == 2（这个值是源码中的初值，可以通过-XX:SyncKnobs来设置），其实对于Policy（1、2、3、4）都是将objectMonitor的ObjectWaiter集合中取出一个等待线程，放入到_EntryList（blocked线程集合，可以参与下次抢锁），只是放入_EntryList的策略不一样，体现为唤醒wait线程的规则不一样。对于默认策略notify在将一个等待线程放入阻塞线程集合之后就退出，因为同步块还没有执行完monitorexit还未来到，锁其实还未释放，所以在打印出“thread1 is exit synchronized!”的时候，thread2线程还是blocked状态（因为thread1还没有退出同步埠）。这里可以发现，对于else的情况，会直接将一个ObjectWaiter进行unpark唤醒操作，但是被唤醒的线程是否立即获取到了锁呢？答案是否定的。</p>
+<h1 id="当调用notify-notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行"><a href="#当调用notify-notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行" class="headerlink" title="当调用notify/notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行"></a>当调用notify/notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行</h1><p>或许大家立马想到这个简单，一个for循环就搞定了，不过在jvm里没实现这么简单，而是借助了monitor_exit，上面我提到了当某个线程从wait状态恢复出来的时候，要先获取锁，然后再退出同步块，所以notifyAll的实现是调用notify的线程在退出其同步块的时候唤醒起最后一个进入wait状态的线程，然后这个线程退出同步块的时候继续唤醒其倒数第二个进入wait状态的线程，依次类推，同样这是一个策略的问题，jvm里提供了挨个直接唤醒线程的参数,这里要分情况：</p>
+<ul>
+<li>如果是通过notify来唤起的线程，那先进入wait的线程会先被唤起来</li>
+<li>如果是通过nootifyAll唤起的线程，默认情况是最后进入的会先被唤起来，即LIFO的策略</li>
+</ul>
+<h1 id="wait的线程是否会影响系统加载降低性能"><a href="#wait的线程是否会影响系统加载降低性能" class="headerlink" title="wait的线程是否会影响系统加载降低性能"></a>wait的线程是否会影响系统加载降低性能</h1><p>这个或许是大家比较关心的话题，因为关乎系统性能问题，wait/nofity是通过jvm里的park/unpark机制来实现的，在linux下这种机制又是通过pthread_cond_wait/pthread_cond_signal来玩的，因此当线程进入到wait状态的时候其实是会放弃cpu的，也就是说这类线程是不会占用cpu资源，也不会影响系统加载。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/JAVA多程线开发/">JAVA多程线开发</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/多线程/">多线程</a><a href="/tags/java/">java</a><a href="/tags/并发/">并发</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://codemaster.tech/2016/11/19/Analysis-of-JAVA-Object-Wait-notify-All-principle/" data-title="分析JAVA Object.wait/notify(All)实现原理 | CodeMaster" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/11/19/Commonly-used-in-Java-multithreading-synchronization-method-and-tools/" title="Java多线程编程中常用的同步方法与工具">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Java多线程编程中常用的同步方法与工具</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/11/19/How-to-use-Synchronized-and-ReentrantLock-in-java/"  title="Java的Synchronized与ReentrantLock使用详解">
+ <strong>下一篇：</strong><br/> 
+ <span>Java的Synchronized与ReentrantLock使用详解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/11/19/Analysis-of-JAVA-Object-Wait-notify-All-principle/" data-title="分析JAVA Object.wait/notify(All)实现原理" data-url="http://codemaster.tech/2016/11/19/Analysis-of-JAVA-Object-Wait-notify-All-principle/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#为何调用wait或notify方法时要加同步锁-synchronized-不加行不行"><span class="toc-number">1.</span> <span class="toc-text">为何调用wait或notify方法时要加同步锁(synchronized),不加行不行</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#调用thread2的lock-wait方法后当前线程还未退出同步代码块，其他线程-thread1-能进入同步块么"><span class="toc-number">2.</span> <span class="toc-text">调用thread2的lock.wait方法后当前线程还未退出同步代码块，其他线程(thread1)能进入同步块么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#为何调用wait方法有可能抛出InterruptedException异常"><span class="toc-number">3.</span> <span class="toc-text">为何调用wait方法有可能抛出InterruptedException异常</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#当调用notify-notiflyAll方法后等待中的线程会立刻唤醒么"><span class="toc-number">4.</span> <span class="toc-text">当调用notify/notiflyAll方法后等待中的线程会立刻唤醒么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#当调用notify-notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行"><span class="toc-number">5.</span> <span class="toc-text">当调用notify/notiflyAll方法后是随机从等待线程队列中取一个或按某种规律取一个来执行</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#wait的线程是否会影响系统加载降低性能"><span class="toc-number">6.</span> <span class="toc-text">wait的线程是否会影响系统加载降低性能</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/JAVA多程线开发/" title="JAVA多程线开发">JAVA多程线开发<sup>5</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JVM基础知识/" title="JVM基础知识">JVM基础知识<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式系统/" title="分布式系统">分布式系统<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大规模Web站点开发/" title="大规模Web站点开发">大规模Web站点开发<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机基础/" title="计算机基础">计算机基础<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件架构/" title="软件架构">软件架构<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件配置管理/" title="软件配置管理">软件配置管理<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/多线程/" title="多线程">多线程<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并发/" title="并发">并发<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Web站点/" title="Web站点">Web站点<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/微服务/" title="微服务">微服务<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ID生成/" title="ID生成">ID生成<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/高并发/" title="高并发">高并发<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JVM/" title="JVM">JVM<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/带宽/" title="带宽">带宽<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式锁/" title="分布式锁">分布式锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/SOA/" title="SOA">SOA<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/maven/" title="maven">maven<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scm/" title="scm">scm<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/项目管理/" title="项目管理">项目管理<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/浮点数运算/" title="浮点数运算">浮点数运算<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/精度丢失/" title="精度丢失">精度丢失<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://dengzhiwei.me" target="_blank" title="Tom Deng">Tom Deng</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://zhuanlan.zhihu.com/donglaoshi" target="_blank" title="董老师在硅谷">董老师在硅谷</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.zhihu.com/people/rednaxelafx" target="_blank" title="RednaxelaFX">RednaxelaFX</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spring.io/" target="_blank" title="Spring">Spring</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://vertx.io/" target="_blank" title="Vert.x">Vert.x</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.playframework.com/" target="_blank" title="Play Framework">Play Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nodeframework.com/" target="_blank" title="Node Framework">Node Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://restlet.com/" target="_blank" title="Restlet">Restlet</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spray.io/" target="_blank" title="Spray">Spray</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nosql-database.org/" target="_blank" title="NoSQL">NoSQL</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://ifeve.com/" target="_blank" title="并发编程网">并发编程网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jdon.com/" target="_blank" title="Jdon">Jdon</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.javaadvent.com/" target="_blank" title="Java Advent">Java Advent</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://studygolang.com/" target="_blank" title="Go语言中文网">Go语言中文网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.techempower.com/benchmarks/" target="_blank" title="Techempower">Techempower</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.microsoft.com/net/" target="_blank" title=".Net Framework">.Net Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://highscalability.com/" target="_blank" title="Highscalability">Highscalability</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://aosabook.org/blog/" target="_blank" title="Architecture">Architecture</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/lauris/awesome-scala" target="_blank" title="Scala libraries">Scala libraries</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://martinfowler.com/" target="_blank" title="Martin Fowler">Martin Fowler</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://colobu.com/" target="_blank" title="Colobu">Colobu</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/JacksonTian/fks" target="_blank" title="JacksonTian">JacksonTian</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.ruanyifeng.com/blog/" target="_blank" title="阮一峰">阮一峰</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.codingnow.com/" target="_blank" title="云风">云风</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://dongxicheng.org/" target="_blank" title="董的博客">董的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/v_JULY_v" target="_blank" title="7月算法">7月算法</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+<!--
+	
+	
+	<section class="info">
+		<p> Keeping code every day. <br/>
+			You will became a master.</p>
+	</section>
+	  -->
+	
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="CodeMaster">CodeMaster</a>
+		
+		
+		<!-- Analytics Begin -->
+		
+
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260842302'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/stat.php%3Fid%3D1260842302%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+		<!-- Analytics End -->
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"xianrendzw"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
