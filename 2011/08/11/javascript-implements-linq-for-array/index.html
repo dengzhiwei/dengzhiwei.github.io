@@ -1,0 +1,1162 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>使Javascript数组(Array]支持.net的LINQ功能 | CodeMaster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="CodeMaster">
+    
+
+    
+    <meta name="description" content="基于Javascript prototype写了一个简单的Array LINQ
+Array.prototype._funcCreator = function(expression) {
+    if (expression == undefined || expression == null) expression = &quot;&quot;;
+    if (typeof expression == &quot;stri">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使Javascript数组(Array]支持.net的LINQ功能">
+<meta property="og:url" content="http://codemaster.tech/2011/08/11/javascript-implements-linq-for-array/index.html">
+<meta property="og:site_name" content="CodeMaster">
+<meta property="og:description" content="基于Javascript prototype写了一个简单的Array LINQ
+Array.prototype._funcCreator = function(expression) {
+    if (expression == undefined || expression == null) expression = &quot;&quot;;
+    if (typeof expression == &quot;stri">
+<meta property="og:updated_time" content="2017-06-11T03:27:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使Javascript数组(Array]支持.net的LINQ功能">
+<meta name="twitter:description" content="基于Javascript prototype写了一个简单的Array LINQ
+Array.prototype._funcCreator = function(expression) {
+    if (expression == undefined || expression == null) expression = &quot;&quot;;
+    if (typeof expression == &quot;stri">
+
+    
+    <link rel="alternative" href="/atom.xml" title="CodeMaster" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/logo.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="CodeMaster">CodeMaster</a></h1>
+				<h2 class="blog-motto">Stay hungry,Stay foolish</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>		
+			
+		<div class="social-font" class="clearfix">
+			
+			
+			<a href="https://github.com/xianrendzw/CodeMaster" target="_blank" class="icon-github" title="github"></a>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<a href="mailto:14068728@qq.com" target="_blank" class="icon-email" title="Email Me"></a>
+			
+		</div>	
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2011/08/11/javascript-implements-linq-for-array/" title="使Javascript数组(Array]支持.net的LINQ功能" itemprop="url">使Javascript数组(Array]支持.net的LINQ功能</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="CodeMaster" target="_blank" itemprop="author">CodeMaster</a>
+		
+  <p class="article-time">
+    <time datetime="2011-08-11T03:05:21.000Z" itemprop="datePublished"> 发表于 2011-08-11 11:05:21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>基于Javascript prototype写了一个简单的Array <a href="http://msdn.microsoft.com/zh-cn/library/bb397926.aspx" target="_blank" rel="external">LINQ</a></p>
+<pre><code class="javascript"><span class="built_in">Array</span>.prototype._funcCreator = <span class="function"><span class="keyword">function</span>(<span class="params">expression</span>) </span>{
+    <span class="keyword">if</span> (expression == <span class="literal">undefined</span> || expression == <span class="literal">null</span>) expression = <span class="string">""</span>;
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> expression == <span class="string">"string"</span>) {
+        <span class="keyword">if</span> (expression == <span class="string">""</span>) {
+            <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{ <span class="keyword">return</span> x; }
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> (expression.indexOf(<span class="string">"=&gt;"</span>) == <span class="number">-1</span>) {
+            <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Function</span>(<span class="string">"$"</span>, <span class="string">"return "</span> + expression);
+        }
+        <span class="keyword">else</span> {
+            <span class="comment">// 像C#3.0中解析操作符 "=&gt;"</span>
+            <span class="keyword">var</span> expr = expression.match(<span class="regexp">/^[(\s]*([^()]*?)[)\s]*=&gt;(.*)/</span>);
+            <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Function</span>(expr[<span class="number">1</span>], <span class="string">"return "</span> + expr[<span class="number">2</span>]);
+        }
+    }
+    <span class="keyword">return</span> expression;
+};
+
+<span class="comment">// 对序列应用累加器函数</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.aggregate = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.sum(expr);
+};
+
+<span class="comment">// 如果源序列中的每个元素都通过指定谓词中的测试，或者序列为空，</span>
+<span class="comment">// 则为 true；否则为 false。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.all = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">if</span> (<span class="keyword">this</span> == <span class="literal">null</span> ||
+        <span class="keyword">this</span>.length == <span class="number">0</span>) {
+        <span class="keyword">return</span> <span class="literal">true</span>;
+    }
+
+    pred = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (!pred(<span class="keyword">this</span>[i])) <span class="keyword">return</span> <span class="literal">false</span>;
+    }
+    <span class="keyword">return</span> <span class="literal">true</span>;
+};
+
+<span class="comment">// 如果源序列中的任何元素都通过指定谓词中的测试，</span>
+<span class="comment">// 则为 true；否则为 false。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.any = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">return</span> !<span class="keyword">this</span>.all(pred);
+};
+
+<span class="comment">// 计算数值序列的平均值</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.average = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> selector = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> sum = <span class="number">0</span>;
+    <span class="keyword">var</span> count = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="keyword">this</span>[i] == <span class="string">"number"</span>) {
+            sum += selector(<span class="keyword">this</span>[i]); count++;
+        }
+    }
+
+    <span class="keyword">return</span> count &gt; <span class="number">0</span> ? sum / count : <span class="number">0</span>;
+};
+
+<span class="comment">// 连接两个序列。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.concat = <span class="function"><span class="keyword">function</span>(<span class="params">expr, arr</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>() = <span class="keyword">this</span>.where(expr);
+    <span class="keyword">return</span> newArray.contact(arr);
+};
+
+<span class="comment">// 确定序列是否包含指定的元素。</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.contains = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> pred;
+
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> expr == <span class="string">"number"</span>) {
+        pred = <span class="function"><span class="keyword">function</span>(<span class="params">x</span>) </span>{ <span class="keyword">return</span> x == expr; }
+    } <span class="keyword">else</span> {
+        pred = <span class="keyword">this</span>._funcCreator(expr);
+    }
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (pred(<span class="keyword">this</span>[i])) <span class="keyword">return</span> <span class="literal">true</span>;
+    }
+
+    <span class="keyword">return</span> <span class="literal">false</span>;
+};
+
+<span class="comment">//返回序列中的元素数量</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.count = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">return</span> expr == <span class="literal">null</span> ? <span class="keyword">this</span>.length : <span class="keyword">this</span>.where(expr).length;
+};
+
+<span class="comment">// 如果序列为空，则返回一个具有默认值的单一实例集合。</span>
+<span class="built_in">Array</span>.prototype.defaultIfEmpty = <span class="function"><span class="keyword">function</span>(<span class="params">defaultValue</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.length == <span class="number">0</span> ? defaultValue : <span class="keyword">this</span>;
+};
+
+<span class="comment">// 返回序列中的非重复元素。</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.distinct = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">var</span> tempArray = (expr == <span class="literal">undefined</span> || expr == <span class="literal">null</span> ? <span class="keyword">this</span> : <span class="keyword">this</span>.select(expr));
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; tempArray.length; i++) {
+        <span class="keyword">if</span> (!newArray.contains(tempArray[i]))
+            newArray[newArray.length] = tempArray[i];
+    }
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 返回序列中指定索引处的元素。</span>
+<span class="built_in">Array</span>.prototype.elementAt = <span class="function"><span class="keyword">function</span>(<span class="params">index</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>[index];
+};
+
+<span class="comment">// 返回序列中指定索引处的元素；如果索引超出范围，则返回默认值。</span>
+<span class="built_in">Array</span>.prototype.elementAtOrDefault = <span class="function"><span class="keyword">function</span>(<span class="params">index, defaultValue</span>) </span>{
+    <span class="keyword">if</span> (index &gt;= <span class="number">0</span> &amp;&amp; index &lt; <span class="keyword">this</span>.length) {
+        <span class="keyword">return</span> <span class="keyword">this</span>[index];
+    }
+    <span class="keyword">return</span> defaultValue;
+};
+
+<span class="comment">// 生成两个序列的差集。</span>
+<span class="built_in">Array</span>.prototype.except = <span class="function"><span class="keyword">function</span>(<span class="params">arr</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">for</span> (<span class="keyword">var</span> a = <span class="number">0</span>; a &lt; <span class="keyword">this</span>.length; a++) {
+        <span class="keyword">var</span> isEqual = <span class="literal">false</span>;
+        <span class="keyword">for</span> (<span class="keyword">var</span> b = <span class="number">0</span>; b &lt; arr.length; b++) {
+            <span class="keyword">if</span> (<span class="keyword">this</span>[a] == arr[b]) { isEqual = <span class="literal">true</span>; <span class="keyword">break</span>; }
+        }
+        <span class="keyword">if</span> (!isEqual) newArray[result.length] = <span class="keyword">this</span>[a];
+    }
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 返回序列中的第一个元素。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.first = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">if</span> (expr != <span class="literal">null</span>) {
+        <span class="keyword">return</span> <span class="keyword">this</span>.where(expr).first();
+    }
+    <span class="keyword">return</span> <span class="keyword">this</span>.length &gt; <span class="number">0</span> ? <span class="keyword">this</span>[<span class="number">0</span>] : <span class="literal">null</span>;
+};
+
+<span class="comment">// 返回序列中的第一个元素；如果未找到元素，则返回默认值。</span>
+<span class="built_in">Array</span>.prototype.firstOrDefault = <span class="function"><span class="keyword">function</span>(<span class="params">defaultValue</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.first() || defaultValue;
+};
+
+<span class="comment">// 生成两个序列的交集。</span>
+<span class="built_in">Array</span>.prototype.intersect = <span class="function"><span class="keyword">function</span>(<span class="params">arr</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">for</span> (<span class="keyword">var</span> a = <span class="number">0</span>; a &lt; <span class="keyword">this</span>.length; a++) {
+        <span class="keyword">for</span> (<span class="keyword">var</span> b = <span class="number">0</span>; b &lt; arr.length; b++) {
+            <span class="keyword">if</span> (<span class="keyword">this</span>[a] == arr[b]) {
+                newArray[result.length] = <span class="keyword">this</span>[a];
+            }
+        }
+    }
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 基于匹配键对两个序列的元素进行关联。</span>
+<span class="built_in">Array</span>.prototype.join = <span class="function"><span class="keyword">function</span>(<span class="params">arr</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.join(arr);
+};
+
+<span class="comment">// 返回序列的最后一个元素。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.last = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">if</span> (expr != <span class="literal">null</span>) {
+        <span class="keyword">return</span> <span class="keyword">this</span>.where(expr).last();
+    }
+
+    <span class="keyword">return</span> <span class="keyword">this</span>.length &gt; <span class="number">0</span> ? <span class="keyword">this</span>[<span class="keyword">this</span>.length - <span class="number">1</span>] : <span class="literal">null</span>;
+};
+
+<span class="comment">// 返回序列中的最后一个元素；如果未找到元素，则返回默认值。</span>
+<span class="built_in">Array</span>.prototype.lastOrDefault = <span class="function"><span class="keyword">function</span>(<span class="params">defaultValue</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.last() || defaultValue;
+};
+
+<span class="comment">// 返回值序列中的最大值。</span>
+<span class="built_in">Array</span>.prototype.max = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
+    <span class="keyword">var</span> max = <span class="keyword">this</span>[<span class="number">0</span>]
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">1</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="keyword">this</span>[i] == <span class="string">"number"</span> &amp;&amp; <span class="keyword">this</span>[i] &gt; max) max = <span class="keyword">this</span>[i];
+    }
+};
+
+<span class="comment">// 返回值序列中的最小值。</span>
+<span class="built_in">Array</span>.prototype.min = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>{
+    <span class="keyword">var</span> min = <span class="keyword">this</span>[<span class="number">0</span>];
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">1</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="keyword">this</span>[i] == <span class="string">"number"</span> &amp;&amp; <span class="keyword">this</span>[i] &gt; min) min = <span class="keyword">this</span>[i];
+    }
+};
+
+<span class="comment">// 按升序对序列的元素排序。</span>
+<span class="comment">// comparer要求一个返回值的比较函数或表达式</span>
+<span class="built_in">Array</span>.prototype.orderBy = <span class="function"><span class="keyword">function</span>(<span class="params">comparer</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        newArray[newArray.length] = <span class="keyword">this</span>[i];
+    }
+    <span class="keyword">return</span> newArray.sort(<span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>{
+        <span class="keyword">var</span> x = comparer(a);
+        <span class="keyword">var</span> y = comparer(b);
+        <span class="keyword">return</span> ((x &lt; y) ? <span class="number">-1</span> : ((x &gt; y) ? <span class="number">1</span> : <span class="number">0</span>));
+    });
+};
+
+<span class="comment">// 按降序对序列的元素排序。</span>
+<span class="comment">// comparer要求一个返回值的比较函数或表达式</span>
+<span class="built_in">Array</span>.prototype.orderByDescending = <span class="function"><span class="keyword">function</span>(<span class="params">comparer</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        newArray[newArray.length] = <span class="keyword">this</span>[i];
+    }
+    <span class="keyword">return</span> newArray.sort(<span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>{
+        <span class="keyword">var</span> x = comparer(b);
+        <span class="keyword">var</span> y = comparer(a);
+        <span class="keyword">return</span> ((x &lt; y) ? <span class="number">-1</span> : ((x &gt; y) ? <span class="number">1</span> : <span class="number">0</span>));
+    });
+};
+
+<span class="comment">// 生成指定范围内的序列。</span>
+<span class="built_in">Array</span>.prototype.range = <span class="function"><span class="keyword">function</span>(<span class="params">startIndex, count</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = startIndex; i &lt; count; i++) {
+        newArray[newArray.length] = <span class="keyword">this</span>[i];
+    }
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 反转序列中元素的顺序。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.reverse = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>() = <span class="keyword">this</span>.where(expr);
+    <span class="keyword">return</span> newArray.reverse();
+};
+
+<span class="comment">// 将序列中的每个元素投影到新表中。</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.select = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> selector = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (selector(<span class="keyword">this</span>[i]) == <span class="keyword">this</span>[i]) {
+            newArray[newArray.length] = <span class="keyword">this</span>[i];
+        }
+    }
+};
+
+<span class="comment">// 将序列的每个元素投影到集合中并将结果序列合并为一个序列。</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.selectMany = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> selector = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        newArray = newArray.concat(selector(<span class="keyword">this</span>[i]));
+    }
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 返回值序列的单个特定元素。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.single = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.where(expr).first();
+};
+
+<span class="comment">// 返回值序列的单个特定元素；如果未找到此类元素，则返回默认值。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.singleOrDefault = <span class="function"><span class="keyword">function</span>(<span class="params">expr, defaultValue</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>() = <span class="keyword">this</span>.where(expr);
+    <span class="keyword">if</span> (newArray == <span class="literal">null</span> || newArray.length == <span class="number">0</span>)
+        <span class="keyword">return</span> defaultValue;
+    <span class="keyword">return</span> newArray[<span class="number">0</span>];
+};
+
+<span class="comment">// 跳过序列中指定数量的元素，然后返回剩余的元素。</span>
+<span class="built_in">Array</span>.prototype.skip = <span class="function"><span class="keyword">function</span>(<span class="params">count</span>) </span>{
+    <span class="keyword">if</span> (count &gt; <span class="keyword">this</span>.length) count = <span class="keyword">this</span>.length;
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = count; i &lt; <span class="keyword">this</span>.length; i++) {
+        newArray[newArray.length] = <span class="keyword">this</span>[i];
+    }
+};
+
+<span class="comment">// 只要满足指定的条件，就跳过序列中的元素，然后返回剩余元素。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.skipWhile = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> pred = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+    <span class="keyword">var</span> i = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (pred(<span class="keyword">this</span>[i])) <span class="keyword">break</span>;
+    }
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> j = i; j &lt; <span class="keyword">this</span>.length; j++) {
+        newArray[newArray.length] = <span class="keyword">this</span>[j];
+    }
+
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 计算数值序列之和。</span>
+<span class="comment">// expr要求一个返回值函数或表达式,返回值不一定为bool值</span>
+<span class="built_in">Array</span>.prototype.sum = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> selector = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> sum = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="keyword">this</span>[i] == <span class="string">"number"</span>) sum += selector(<span class="keyword">this</span>[i]);
+    }
+
+    <span class="keyword">return</span> sum;
+};
+
+<span class="comment">// 从序列的开头返回指定数量的连续元素。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.take = <span class="function"><span class="keyword">function</span>(<span class="params">count</span>) </span>{
+    <span class="keyword">if</span> (<span class="built_in">parseInt</span>(count) &gt;= <span class="keyword">this</span>.length) count = <span class="keyword">this</span>.length;
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>() = [];
+
+    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; count; i++) {
+        newArray[i] = <span class="keyword">this</span>[i];
+    }
+
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 只要满足指定的条件，就会返回序列的元素，然后跳过剩余的元素</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.takeWhile = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> pred = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        newArray[newArray.length] = <span class="keyword">this</span>[i];
+        <span class="keyword">if</span> (pred(<span class="keyword">this</span>[i])) <span class="keyword">break</span>;
+    }
+
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="comment">// 返回一个数组。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.toArray = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">return</span> <span class="keyword">this</span>.where(expr);
+};
+
+<span class="comment">// 生成两个序列的并集。</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.union = <span class="function"><span class="keyword">function</span>(<span class="params">expr, arr</span>) </span>{
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>() = <span class="keyword">this</span>.where(expr);
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; arr.length; i++) {
+        <span class="keyword">if</span> (newArray.contains(arr[i])) newArray[newArray.length] = arr[i];
+    }
+};
+
+<span class="comment">// 基于谓词筛选值序列</span>
+<span class="comment">// expr要求一个返回bool值的函数或表达式</span>
+<span class="built_in">Array</span>.prototype.where = <span class="function"><span class="keyword">function</span>(<span class="params">expr</span>) </span>{
+    <span class="keyword">var</span> pred = <span class="keyword">this</span>._funcCreator(expr);
+    <span class="keyword">var</span> newArray = <span class="keyword">new</span> <span class="built_in">Array</span>();
+
+    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.length; i++) {
+        <span class="keyword">if</span> (pred(<span class="keyword">this</span>[i])) {
+            newArray[newArray.length] = <span class="keyword">this</span>[i];
+        }
+    }
+
+    <span class="keyword">return</span> newArray;
+};
+
+<span class="keyword">var</span> list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">88</span>, <span class="number">35</span>, <span class="number">8</span>, <span class="number">7</span>];
+<span class="built_in">document</span>.writeln(<span class="string">"==========Filter===========&lt;br/&gt;"</span>);
+<span class="keyword">var</span> list1 = list.where(<span class="string">"x =&gt; x % 2 == 0"</span>);
+<span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; list1.length; i++) {
+    <span class="built_in">document</span>.write(list1[i] + <span class="string">","</span>);
+}
+
+<span class="built_in">document</span>.writeln(<span class="string">"&lt;br/&gt;==========Contains===========&lt;br/&gt;"</span>);
+<span class="keyword">if</span> (list.contains(<span class="number">3</span>)) {
+    <span class="built_in">document</span>.writeln(<span class="string">"true&lt;br/&gt;"</span>);
+}
+<span class="keyword">if</span> (list.contains(<span class="string">"x=&gt; 3/x == 1"</span>)) {
+    <span class="built_in">document</span>.writeln(<span class="string">"true&lt;br/&gt;"</span>);
+}
+
+<span class="built_in">document</span>.writeln(<span class="string">"&lt;br/&gt;==========Sum===========&lt;br/&gt;"</span>);
+<span class="built_in">document</span>.writeln(list.sum() + <span class="string">"&lt;br/&gt;"</span>);
+<span class="built_in">document</span>.writeln(<span class="string">"&lt;br/&gt;==========average===========&lt;br/&gt;"</span>);
+<span class="built_in">document</span>.writeln(list.average() + <span class="string">"&lt;br/&gt;"</span>);
+
+<span class="built_in">document</span>.writeln(<span class="string">"&lt;br/&gt;==========distinct===========&lt;br/&gt;"</span>);
+<span class="keyword">var</span> list2 = list.distinct();
+<span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; list2.length; i++) {
+    <span class="built_in">document</span>.writeln(list2[i] + <span class="string">","</span>);
+}
+</code></pre>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/LINQ/">LINQ</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://codemaster.tech/2011/08/11/javascript-implements-linq-for-array/" data-title="使Javascript数组(Array]支持.net的LINQ功能 | CodeMaster" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2011/09/11/architecture-design-idiom-patterns/" title="架构模式 设计模式 习惯用法——模式的三个镜界">
+  <strong>上一篇：</strong><br/>
+  <span>
+  架构模式 设计模式 习惯用法——模式的三个镜界</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2011/08/11/dotnet-vs-java/"  title="JAVA与.NET两大平台简单对比">
+ <strong>下一篇：</strong><br/> 
+ <span>JAVA与.NET两大平台简单对比
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2011/08/11/javascript-implements-linq-for-array/" data-title="使Javascript数组(Array]支持.net的LINQ功能" data-url="http://codemaster.tech/2011/08/11/javascript-implements-linq-for-array/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/NET/" title=".NET">.NET<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JAVA多程线开发/" title="JAVA多程线开发">JAVA多程线开发<sup>5</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JVM基础知识/" title="JVM基础知识">JVM基础知识<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SpringBoot/" title="SpringBoot">SpringBoot<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式系统/" title="分布式系统">分布式系统<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大规模Web站点开发/" title="大规模Web站点开发">大规模Web站点开发<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/文章收藏/" title="文章收藏">文章收藏<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机书籍/" title="计算机书籍">计算机书籍<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机基础/" title="计算机基础">计算机基础<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件架构/" title="软件架构">软件架构<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件配置管理/" title="软件配置管理">软件配置管理<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/面向对象/" title="面向对象">面向对象<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/多线程/" title="多线程">多线程<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并发/" title="并发">并发<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Web站点/" title="Web站点">Web站点<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/微服务/" title="微服务">微服务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/计算机基础/" title="计算机基础">计算机基础<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面向对象/" title="面向对象">面向对象<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ID生成/" title="ID生成">ID生成<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式锁/" title="分布式锁">分布式锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/高并发/" title="高并发">高并发<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/带宽/" title="带宽">带宽<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/软件架构/" title="软件架构">软件架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JAVA/" title="JAVA">JAVA<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/委托/" title="委托">委托<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/LINQ/" title="LINQ">LINQ<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/技术文章/" title="技术文章">技术文章<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://dengzhiwei.me" target="_blank" title="Tom Deng">Tom Deng</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://buptubuntu.github.io" target="_blank" title="能大">能大</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://zhuanlan.zhihu.com/donglaoshi" target="_blank" title="董老师在硅谷">董老师在硅谷</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.zhihu.com/people/rednaxelafx" target="_blank" title="RednaxelaFX">RednaxelaFX</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spring.io/" target="_blank" title="Spring">Spring</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://vertx.io/" target="_blank" title="Vert.x">Vert.x</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.playframework.com/" target="_blank" title="Play Framework">Play Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nodeframework.com/" target="_blank" title="Node Framework">Node Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://restlet.com/" target="_blank" title="Restlet">Restlet</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spray.io/" target="_blank" title="Spray">Spray</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nosql-database.org/" target="_blank" title="NoSQL">NoSQL</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://ifeve.com/" target="_blank" title="并发编程网">并发编程网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jdon.com/" target="_blank" title="Jdon">Jdon</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.javaadvent.com/" target="_blank" title="Java Advent">Java Advent</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://studygolang.com/" target="_blank" title="Go语言中文网">Go语言中文网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.techempower.com/benchmarks/" target="_blank" title="Techempower">Techempower</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.microsoft.com/net/" target="_blank" title=".Net Framework">.Net Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://highscalability.com/" target="_blank" title="Highscalability">Highscalability</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://aosabook.org/blog/" target="_blank" title="Architecture">Architecture</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/lauris/awesome-scala" target="_blank" title="Scala libraries">Scala libraries</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://martinfowler.com/" target="_blank" title="Martin Fowler">Martin Fowler</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://colobu.com/" target="_blank" title="Colobu">Colobu</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/JacksonTian/fks" target="_blank" title="JacksonTian">JacksonTian</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.ruanyifeng.com/blog/" target="_blank" title="阮一峰">阮一峰</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.codingnow.com/" target="_blank" title="云风">云风</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://dongxicheng.org/" target="_blank" title="董的博客">董的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/v_JULY_v" target="_blank" title="7月算法">7月算法</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+<!--
+	
+	
+	<section class="info">
+		<p> Keeping code every day. <br/>
+			You will became a master.</p>
+	</section>
+	  -->
+	
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="CodeMaster">CodeMaster</a>
+		
+		
+		<!-- Analytics Begin -->
+		
+
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260842302'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/stat.php%3Fid%3D1260842302%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+		<!-- Analytics End -->
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"xianrendzw"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

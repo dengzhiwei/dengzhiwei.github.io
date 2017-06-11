@@ -1,0 +1,775 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>在C#中何时使用委托(delegate)取代接口(interface) | CodeMaster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="CodeMaster">
+    
+
+    
+    <meta name="description" content="委托和接口都允许类设计器分离类型声明和实现。任何类或结构都能继承和实现给定的接口。可以为任何类上的方法创建委托，前提是该方法符合委托的方法签名。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;接口引用或委托可由不了解实现该接口或委托方法的类的对象使用。既然存在这些相似性，那么类设计器何时应使用委托，何时又该使用接口呢？在以下情况下，请使用委托：  
+
+当使用事件设计模式时。
+当封装静态方法可取时。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在C#中何时使用委托(delegate)取代接口(interface)">
+<meta property="og:url" content="http://codemaster.tech/2011/06/11/when-using-delegate-instead-of-interface/index.html">
+<meta property="og:site_name" content="CodeMaster">
+<meta property="og:description" content="委托和接口都允许类设计器分离类型声明和实现。任何类或结构都能继承和实现给定的接口。可以为任何类上的方法创建委托，前提是该方法符合委托的方法签名。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;接口引用或委托可由不了解实现该接口或委托方法的类的对象使用。既然存在这些相似性，那么类设计器何时应使用委托，何时又该使用接口呢？在以下情况下，请使用委托：  
+
+当使用事件设计模式时。
+当封装静态方法可取时。">
+<meta property="og:updated_time" content="2017-06-11T03:27:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在C#中何时使用委托(delegate)取代接口(interface)">
+<meta name="twitter:description" content="委托和接口都允许类设计器分离类型声明和实现。任何类或结构都能继承和实现给定的接口。可以为任何类上的方法创建委托，前提是该方法符合委托的方法签名。&amp;ensp;&amp;ensp;&amp;ensp;&amp;ensp;接口引用或委托可由不了解实现该接口或委托方法的类的对象使用。既然存在这些相似性，那么类设计器何时应使用委托，何时又该使用接口呢？在以下情况下，请使用委托：  
+
+当使用事件设计模式时。
+当封装静态方法可取时。">
+
+    
+    <link rel="alternative" href="/atom.xml" title="CodeMaster" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/logo.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="CodeMaster">CodeMaster</a></h1>
+				<h2 class="blog-motto">Stay hungry,Stay foolish</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>		
+			
+		<div class="social-font" class="clearfix">
+			
+			
+			<a href="https://github.com/xianrendzw/CodeMaster" target="_blank" class="icon-github" title="github"></a>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<a href="mailto:14068728@qq.com" target="_blank" class="icon-email" title="Email Me"></a>
+			
+		</div>	
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2011/06/11/when-using-delegate-instead-of-interface/" title="在C#中何时使用委托(delegate)取代接口(interface)" itemprop="url">在C#中何时使用委托(delegate)取代接口(interface)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="CodeMaster" target="_blank" itemprop="author">CodeMaster</a>
+		
+  <p class="article-time">
+    <time datetime="2011-06-11T03:06:33.000Z" itemprop="datePublished"> 发表于 2011-06-11 11:06:33</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>委托和接口都允许类设计器分离类型声明和实现。任何类或结构都能继承和实现给定的接口。可以为任何类上的方法创建委托，前提是该方法符合委托的方法签名。<br>&ensp;&ensp;&ensp;&ensp;接口引用或委托可由不了解实现该接口或委托方法的类的对象使用。既然存在这些相似性，那么类设计器何时应使用委托，何时又该使用接口呢？<br>在以下情况下，请使用委托：  </p>
+<ul>
+<li>当使用事件设计模式时。</li>
+<li>当封装静态方法可取时。</li>
+<li>当调用方不需要访问实现该方法的对象中的其他属性、方法或接口时。</li>
+<li>需要方便的组合。</li>
+<li>当类可能需要该方法的多个实现时。</li>
+</ul>
+<p>在以下情况下，请使用接口：  </p>
+<ul>
+<li>当存在一组可能被调用的相关方法时。</li>
+<li>当类只需要方法的单个实现时。</li>
+<li>当使用接口的类想要将该接口强制转换为其他接口或类类型时。</li>
+<li>当正在实现的方法链接到类的类型或标识时：例如比较方法。</li>
+</ul>
+<p>&ensp;&ensp;&ensp;&ensp;使用单一方法接口而不使用委托的一个很好的示例是 IComparable 或泛型版本 IComparable&lt;(Of &lt;(T&gt;)&gt;)。IComparable 声明 CompareTo 方法，该方法返回一个整数，指定相同类型的两个对象之间的小于、等于或大于关系。IComparable 可用作排序算法的基础。虽然将委托比较方法用作排序算法的基础是有效的，但是并不理想。因为进行比较的能力属于类，而比较算法不会在运行时改变，所以单一方法接口是理想的。看了上面这段精要而且简短总结（来自微软官方），初学者是不是觉得不知所云。但是当你对接口与委托有深入了解与实践之后觉得上面的话是多么的简单明了，真可谓是一针见血，说得恰到好处。上面的设计总结，揭示以下相关内容：   </p>
+<ol>
+<li>Observer 模式[GoF] </li>
+<li>事件设计模式 </li>
+<li>接口多态 </li>
+</ol>
+<p>&ensp;&ensp;&ensp;&ensp;很显然，如果大家对observer模式有熟悉的话，那么对.net或java的事件设计模式应该非常容易理解。observer模式主要用于解决一对多的类似于发布与订阅这样的场景。像java的所有Listener，.net的所有event方法订阅者。从名字上来看，不管是监听者，还是订阅者,其实都是观察者，它们都是用来监视或订阅或观察别人（被观察者observerable）的一举一动的。只要别人有什么动作或变化，它observer就马上作出反应。所以，”当使用事件设计模式时“，自然就想到用委托来实现，而且.net平台用它来实现observer(需要方便的组合)，可谓更加简洁，更加解藕。”当类可能需要该方法的多个实现时”，我们来看看委托只是声明了一个方法原型(prototype)，可以说成是一个方法的模板（eg.:public delegate void Action<t>(T t))。也就是一个方法有多个实现，大家不要与方法重载(overloading)搞混了，重载方法其实已经是另一个方法与另一个实现，只是方法名还是相同的。<br>&ensp;&ensp;&ensp;&ensp;委托只是指定一个方法原型，只是所有与原型匹配的方法都是合理的实现，其实接口也这样，指定一个方法的原型（注意，接口与委托在方法签名的差别）。显然，委托是方法的1对N关系，当然也可以1对1,其实应该可以是M对N关系。而接口是方法的N对1关系(当存在一组可能被调用的相关方法时),即一组方法对应一个接口(类),<br>而且每个方法所在的类只需要方法的单个实现时。这就是为什么“当使用接口的类想要将该接口强制转换为其他接口或类类型时”建议使用接口而不使用委托。那么这时候，你也许会问，如果我定义一个接口里只有一个方法，然后写N个接口的实现者，不一样可以达到像委托那样方法的1对N关系？呵呵，不错，确实是这样，大家看看java，其实没有委托(delegate)关键字，它所有的事件模型实现，都是使用ActionListener方式。的确在事件模型实现上，像java中的接口方式与.net的delegate方式都是可以。其实它们正在observer模式的两种不同实现方式而已。<br>&ensp;&ensp;&ensp;&ensp;其实，.net也可像java那种方式来实现，当然.net的委托还有其它作用，如异步调用(BeginInvoke)，回调函数(Callback),lamada表达式等都应用到委托。</t></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/NET/">.NET</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/C/">C#</a><a href="/tags/委托/">委托</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://codemaster.tech/2011/06/11/when-using-delegate-instead-of-interface/" data-title="在C#中何时使用委托(delegate)取代接口(interface) | CodeMaster" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2011/07/11/my-fav-computer-books/" title="个人看过的或收藏的计算机书及简评">
+  <strong>上一篇：</strong><br/>
+  <span>
+  个人看过的或收藏的计算机书及简评</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2009/08/11/developer-learning-roadmap/"  title="个人建议的开发人员学习路线">
+ <strong>下一篇：</strong><br/> 
+ <span>个人建议的开发人员学习路线
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2011/06/11/when-using-delegate-instead-of-interface/" data-title="在C#中何时使用委托(delegate)取代接口(interface)" data-url="http://codemaster.tech/2011/06/11/when-using-delegate-instead-of-interface/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/NET/" title=".NET">.NET<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JAVA多程线开发/" title="JAVA多程线开发">JAVA多程线开发<sup>5</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JVM基础知识/" title="JVM基础知识">JVM基础知识<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SpringBoot/" title="SpringBoot">SpringBoot<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式系统/" title="分布式系统">分布式系统<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大规模Web站点开发/" title="大规模Web站点开发">大规模Web站点开发<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/文章收藏/" title="文章收藏">文章收藏<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机书籍/" title="计算机书籍">计算机书籍<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机基础/" title="计算机基础">计算机基础<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件架构/" title="软件架构">软件架构<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件配置管理/" title="软件配置管理">软件配置管理<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/面向对象/" title="面向对象">面向对象<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/多线程/" title="多线程">多线程<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并发/" title="并发">并发<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Web站点/" title="Web站点">Web站点<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/微服务/" title="微服务">微服务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/计算机基础/" title="计算机基础">计算机基础<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面向对象/" title="面向对象">面向对象<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ID生成/" title="ID生成">ID生成<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式锁/" title="分布式锁">分布式锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/高并发/" title="高并发">高并发<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/带宽/" title="带宽">带宽<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/软件架构/" title="软件架构">软件架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JAVA/" title="JAVA">JAVA<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/委托/" title="委托">委托<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/LINQ/" title="LINQ">LINQ<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/技术文章/" title="技术文章">技术文章<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://dengzhiwei.me" target="_blank" title="Tom Deng">Tom Deng</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://buptubuntu.github.io" target="_blank" title="能大">能大</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://zhuanlan.zhihu.com/donglaoshi" target="_blank" title="董老师在硅谷">董老师在硅谷</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.zhihu.com/people/rednaxelafx" target="_blank" title="RednaxelaFX">RednaxelaFX</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spring.io/" target="_blank" title="Spring">Spring</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://vertx.io/" target="_blank" title="Vert.x">Vert.x</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.playframework.com/" target="_blank" title="Play Framework">Play Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nodeframework.com/" target="_blank" title="Node Framework">Node Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://restlet.com/" target="_blank" title="Restlet">Restlet</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spray.io/" target="_blank" title="Spray">Spray</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nosql-database.org/" target="_blank" title="NoSQL">NoSQL</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://ifeve.com/" target="_blank" title="并发编程网">并发编程网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jdon.com/" target="_blank" title="Jdon">Jdon</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.javaadvent.com/" target="_blank" title="Java Advent">Java Advent</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://studygolang.com/" target="_blank" title="Go语言中文网">Go语言中文网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.techempower.com/benchmarks/" target="_blank" title="Techempower">Techempower</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.microsoft.com/net/" target="_blank" title=".Net Framework">.Net Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://highscalability.com/" target="_blank" title="Highscalability">Highscalability</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://aosabook.org/blog/" target="_blank" title="Architecture">Architecture</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/lauris/awesome-scala" target="_blank" title="Scala libraries">Scala libraries</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://martinfowler.com/" target="_blank" title="Martin Fowler">Martin Fowler</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://colobu.com/" target="_blank" title="Colobu">Colobu</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/JacksonTian/fks" target="_blank" title="JacksonTian">JacksonTian</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.ruanyifeng.com/blog/" target="_blank" title="阮一峰">阮一峰</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.codingnow.com/" target="_blank" title="云风">云风</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://dongxicheng.org/" target="_blank" title="董的博客">董的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/v_JULY_v" target="_blank" title="7月算法">7月算法</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+<!--
+	
+	
+	<section class="info">
+		<p> Keeping code every day. <br/>
+			You will became a master.</p>
+	</section>
+	  -->
+	
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="CodeMaster">CodeMaster</a>
+		
+		
+		<!-- Analytics Begin -->
+		
+
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260842302'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/stat.php%3Fid%3D1260842302%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+		<!-- Analytics End -->
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"xianrendzw"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,758 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>常用面试对象分析方法 | CodeMaster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="CodeMaster">
+    
+
+    
+    <meta name="description" content="面向对象分析(OOAD方法，常见有以下几种，请注意，它们不是孤立的存在，通常是结合在一起使用。也就是说，我们在分析与设计时，常常需要综合多种方法来处理当前的问题域(Problem Domain)
+
+Classical Approaches(经典分析方法）：基本上是按现实世界中存在事物中进行分类或归类的过程，因为现实世界本身有很多东西都已经是分类好的（如:人类：男人，女人;学校：小，中，大学;角色：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用面试对象分析方法">
+<meta property="og:url" content="http://codemaster.tech/2009/05/11/commonly-used-object-oriented-analysis-method/index.html">
+<meta property="og:site_name" content="CodeMaster">
+<meta property="og:description" content="面向对象分析(OOAD方法，常见有以下几种，请注意，它们不是孤立的存在，通常是结合在一起使用。也就是说，我们在分析与设计时，常常需要综合多种方法来处理当前的问题域(Problem Domain)
+
+Classical Approaches(经典分析方法）：基本上是按现实世界中存在事物中进行分类或归类的过程，因为现实世界本身有很多东西都已经是分类好的（如:人类：男人，女人;学校：小，中，大学;角色：">
+<meta property="og:updated_time" content="2017-06-11T03:27:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常用面试对象分析方法">
+<meta name="twitter:description" content="面向对象分析(OOAD方法，常见有以下几种，请注意，它们不是孤立的存在，通常是结合在一起使用。也就是说，我们在分析与设计时，常常需要综合多种方法来处理当前的问题域(Problem Domain)
+
+Classical Approaches(经典分析方法）：基本上是按现实世界中存在事物中进行分类或归类的过程，因为现实世界本身有很多东西都已经是分类好的（如:人类：男人，女人;学校：小，中，大学;角色：">
+
+    
+    <link rel="alternative" href="/atom.xml" title="CodeMaster" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/logo.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="CodeMaster">CodeMaster</a></h1>
+				<h2 class="blog-motto">Stay hungry,Stay foolish</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= null ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>		
+			
+		<div class="social-font" class="clearfix">
+			
+			
+			<a href="https://github.com/xianrendzw/CodeMaster" target="_blank" class="icon-github" title="github"></a>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<a href="mailto:14068728@qq.com" target="_blank" class="icon-email" title="Email Me"></a>
+			
+		</div>	
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2009/05/11/commonly-used-object-oriented-analysis-method/" title="常用面试对象分析方法" itemprop="url">常用面试对象分析方法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="CodeMaster" target="_blank" itemprop="author">CodeMaster</a>
+		
+  <p class="article-time">
+    <time datetime="2009-05-11T03:03:56.000Z" itemprop="datePublished"> 发表于 2009-05-11 11:03:56</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>面向对象分析(OOAD方法，常见有以下几种，请注意，它们不是孤立的存在，通常是结合在一起使用。也就是说，我们在分析与设计时，常常需要综合多种方法来处理当前的问题域(Problem Domain)</p>
+<ol>
+<li>Classical Approaches(经典分析方法）：基本上是按现实世界中存在事物中进行分类或归类的过程，因为现实世界本身有很多东西都已经是分类好的（如:人类：男人，女人;学校：小，中，大学;角色：教师，母亲，父亲），现实世界本身也就包含了各种各样的分类。</li>
+<li><a href="http://www.china-pub.com/30653" target="_blank" rel="external">Behavior Analysis</a>（行为分析方法）：这种方法注重于对象动态结构（角色、职责），如“人”具有哪些基本行为，“人”在小孩时，少年，成年，老年，父亲（角色）这些情况下的具体哪些行为等。 </li>
+<li><a href="http://www.china-pub.com/22779" target="_blank" rel="external">Domain Analysis</a>(领域分析方法）：从问题域的领域（业务）逻辑出发，因此需要分析业务特点，一般来说要求有相关领域（业务）知识（业务专家）的人在场，然后再建立一个简单的领域模型，再与业务人员讨论，再精化。 </li>
+<li><a href="http://www.china-pub.com/44421" target="_blank" rel="external">CRC Cards</a> (Class-Responsibilities-Collaborators卡分析方法):把现实世界对象进行归类，指派职责，关联其相关协作对象（类），然后以小卡片的形式全部列出来。</li>
+<li><a href="http://www.china-pub.com/29702" target="_blank" rel="external">Use Case Analysis</a>(用例驱动分析方法）：用UML用例图或相关文档，描述一个需求的，参与者，场景，基本流程，替换流程，前置条件，后置条件等。 </li>
+<li>Structured Analysis（结构化分析方法）：采用面向过程方法学中结构化分析，从系统的数据流，控制流，数据结构的角度来分析问题域。 </li>
+<li>Informal Language Description（非正式语言描述方法）：用一句或几句话简单的描述需求说明，然后从这句话中，去找名词，动词。名词一般作为类，动词代表行为。但是人类的语言是非常不确定的，也就是对同一个事情描述不尽相同，所以这种方法虽然简单，但有时很难把握真正的对象(名词可以作动词，动词也可以为名词）。 那么，这么多方法中，有没有最好的，我告诉你：没有！只有适合你当前情况的，没有哪个是最好的。通常，这些方法很可能同时在一个系统或项目中使用。按我个人的经验，我一般是这样的去应用这些方法： <ul>
+<li>从用例或需求（Use Case)，故事(Story/Backlog)出发 </li>
+<li>根据1中的说明或描述，找到Domain对象（这个过程，我可能用Classical Approaches,Informal Language Description, Domain Analysis，三个一起使用</li>
+<li>根据2中Domain对象，分析对象的角色，职责，协作，然后自己用CRC图的结构画一些草图(有条件，可以买卡片）</li>
+<li>用迭代与增量式的开发方式对问题进行不断精化与提炼,具体每个类的行为实现，我有时候要用结构化方法来分析(Structured Analysis)。</li>
+</ul>
+</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/面向对象/">面向对象</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/设计模式/">设计模式</a><a href="/tags/面向对象/">面向对象</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://codemaster.tech/2009/05/11/commonly-used-object-oriented-analysis-method/" data-title="常用面试对象分析方法 | CodeMaster" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2009/06/11/my-fav-tech-posts/" title="个人收藏的一些技术文章">
+  <strong>上一篇：</strong><br/>
+  <span>
+  个人收藏的一些技术文章</span>
+</a>
+</div>
+
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2009/05/11/commonly-used-object-oriented-analysis-method/" data-title="常用面试对象分析方法" data-url="http://codemaster.tech/2009/05/11/commonly-used-object-oriented-analysis-method/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/NET/" title=".NET">.NET<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JAVA多程线开发/" title="JAVA多程线开发">JAVA多程线开发<sup>5</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/JVM基础知识/" title="JVM基础知识">JVM基础知识<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/SpringBoot/" title="SpringBoot">SpringBoot<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/分布式系统/" title="分布式系统">分布式系统<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/大规模Web站点开发/" title="大规模Web站点开发">大规模Web站点开发<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/文章收藏/" title="文章收藏">文章收藏<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机书籍/" title="计算机书籍">计算机书籍<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/计算机基础/" title="计算机基础">计算机基础<sup>3</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件架构/" title="软件架构">软件架构<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/软件配置管理/" title="软件配置管理">软件配置管理<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/面向对象/" title="面向对象">面向对象<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/多线程/" title="多线程">多线程<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/并发/" title="并发">并发<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Web站点/" title="Web站点">Web站点<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/架构/" title="架构">架构<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/微服务/" title="微服务">微服务<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/计算机基础/" title="计算机基础">计算机基础<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面向对象/" title="面向对象">面向对象<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ID生成/" title="ID生成">ID生成<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式锁/" title="分布式锁">分布式锁<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/高并发/" title="高并发">高并发<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/带宽/" title="带宽">带宽<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/软件架构/" title="软件架构">软件架构<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分布式/" title="分布式">分布式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/JAVA/" title="JAVA">JAVA<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/委托/" title="委托">委托<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/LINQ/" title="LINQ">LINQ<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/技术文章/" title="技术文章">技术文章<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://dengzhiwei.me" target="_blank" title="Tom Deng">Tom Deng</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://buptubuntu.github.io" target="_blank" title="能大">能大</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://zhuanlan.zhihu.com/donglaoshi" target="_blank" title="董老师在硅谷">董老师在硅谷</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.zhihu.com/people/rednaxelafx" target="_blank" title="RednaxelaFX">RednaxelaFX</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spring.io/" target="_blank" title="Spring">Spring</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://vertx.io/" target="_blank" title="Vert.x">Vert.x</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.playframework.com/" target="_blank" title="Play Framework">Play Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nodeframework.com/" target="_blank" title="Node Framework">Node Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://restlet.com/" target="_blank" title="Restlet">Restlet</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://spray.io/" target="_blank" title="Spray">Spray</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://nosql-database.org/" target="_blank" title="NoSQL">NoSQL</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://ifeve.com/" target="_blank" title="并发编程网">并发编程网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.jdon.com/" target="_blank" title="Jdon">Jdon</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.javaadvent.com/" target="_blank" title="Java Advent">Java Advent</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://studygolang.com/" target="_blank" title="Go语言中文网">Go语言中文网</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.techempower.com/benchmarks/" target="_blank" title="Techempower">Techempower</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.microsoft.com/net/" target="_blank" title=".Net Framework">.Net Framework</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://highscalability.com/" target="_blank" title="Highscalability">Highscalability</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://aosabook.org/blog/" target="_blank" title="Architecture">Architecture</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/lauris/awesome-scala" target="_blank" title="Scala libraries">Scala libraries</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://martinfowler.com/" target="_blank" title="Martin Fowler">Martin Fowler</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://colobu.com/" target="_blank" title="Colobu">Colobu</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/JacksonTian/fks" target="_blank" title="JacksonTian">JacksonTian</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.ruanyifeng.com/blog/" target="_blank" title="阮一峰">阮一峰</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://hedengcheng.com/" target="_blank" title="何登成">何登成</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.codingnow.com/" target="_blank" title="云风">云风</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://dongxicheng.org/" target="_blank" title="董的博客">董的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/v_JULY_v" target="_blank" title="7月算法">7月算法</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+<!--
+	
+	
+	<section class="info">
+		<p> Keeping code every day. <br/>
+			You will became a master.</p>
+	</section>
+	  -->
+	
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="CodeMaster">CodeMaster</a>
+		
+		
+		<!-- Analytics Begin -->
+		
+
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1260842302'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s95.cnzz.com/stat.php%3Fid%3D1260842302%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+		<!-- Analytics End -->
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"xianrendzw"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
